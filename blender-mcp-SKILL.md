@@ -1,6 +1,6 @@
 ---
 name: blender-mcp
-description: Connect to and control Blender via the official Blender MCP Server. Supports two modes: (1) full MCP Server + mcporter (recommended); (2) direct TCP Socket to Blender Addon (lightweight). Covers 20 built-in tools + arbitrary bpy code execution. Use when: user requests MCP connection to Blender, installs blender_mcp, configures Blender MCP Server, or wants programmatic Blender control.
+description: "Connect to and control Blender via the official Blender MCP Server. Supports two modes: full MCP Server + mcporter (recommended) and direct TCP Socket (lightweight). Covers 20 built-in tools plus arbitrary bpy code execution."
 homepage: https://www.blender.org/lab/mcp-server/
 metadata:
   openclaw:
