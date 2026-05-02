@@ -113,6 +113,8 @@ mcporter call blender-mcp.render_viewport_to_path output_path="C:\\render.png"
 
 ### Method 2: Direct TCP Socket to Blender Addon (lightweight)
 
+⚠️ **Warning**: This mode sends caller-supplied code directly to Blender with no guardrails. Review code before execution.
+
 When you don't need the full MCP Server, you can communicate directly with the Blender Addon via TCP Socket:
 
 ```python
@@ -287,6 +289,30 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 **Built-in weak sandbox** (`WeakSandboxForLLM`):
 - Blocks `sys.exit()` calls
 - Blocks dangerous operators: `wm.quit_blender`, `wm.read_factory_settings`, `wm.read_factory_userpref`, `wm.read_userpref`
+
+### Security Best Practices
+
+**1. Keep server local only**
+- Always use `localhost` / `127.0.0.1` — never bind to `0.0.0.0`
+- Never expose port 9876 to your network or firewall rules
+- Stop the MCP server when not actively using it
+
+**2. Review code before execution**
+- Prefer scoped built-in tools (e.g., `get_objects_summary`) over raw `execute_blender_code` for routine tasks
+- Review generated Python code before running, especially for:
+  - File operations (save, export, delete)
+  - Batch modifications (all objects, all materials)
+  - External API calls (network requests, subprocess)
+
+**3. Protect your projects**
+- Keep backups of important `.blend` files before running automated code
+- Test new code on a copy of your project first
+- Use version control for production scenes
+
+**4. Verify external dependencies**
+- Download the MCP addon only from official Blender Lab sources
+- Verify pip package names (`mcp`, `pyyaml`, `starlette`) match official releases
+- Do not use unofficial mirrors or third-party builds
 
 **Recommendation**: Run in a VM or on a system without sensitive data.
 
