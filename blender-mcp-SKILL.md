@@ -1,6 +1,6 @@
 ---
 name: blender-mcp
-description: 通过 Blender 官方 MCP Server 连接和控制 Blender。支持两种模式：(1) 完整 MCP Server + mcporter（推荐）；(2) 直连 Blender Addon TCP Socket（轻量）。覆盖 20 个内置工具 + 任意 bpy 代码执行。Use when: 用户要求通过 MCP 连接 Blender、安装 blender_mcp、配置 Blender MCP Server、或通过程序化方式控制 Blender。
+description: Connect to and control Blender via the official Blender MCP Server. Supports two modes: (1) full MCP Server + mcporter (recommended); (2) direct TCP Socket to Blender Addon (lightweight). Covers 20 built-in tools + arbitrary bpy code execution. Use when: user requests MCP connection to Blender, installs blender_mcp, configures Blender MCP Server, or wants programmatic Blender control.
 homepage: https://www.blender.org/lab/mcp-server/
 metadata:
   openclaw:
@@ -15,112 +15,112 @@ metadata:
         label: "Install mcporter (npm)"
 ---
 
-# Blender MCP Server 连接技能
+# Blender MCP Server Connection Skill
 
-通过 Blender 官方 MCP Server 连接和控制 Blender 实例。
+Connect to and control a running Blender instance via the official Blender MCP Server.
 
-**版本要求**: Blender 5.1+（必须）
+**Version requirement**: Blender 5.1+ (mandatory)
 
 ---
 
-## 架构概览
+## Architecture Overview
 
 ```
-┌─────────────┐     TCP Socket      ┌──────────────────┐     MCP Protocol     ┌──────────────┐
+┌─────────────┐     TCP Socket      ┌──────────────────     MCP Protocol     ┌──────────────
 │  LLM Client │ ◄─────────────────► │  MCP Server      │ ◄──────────────────► │   Blender    │
 │  (OpenClaw) │    stdio / HTTP     │  (Python process) │    port 9876         │   (Addon)    │
-└─────────────┘                     └──────────────────┘                      └──────────────┘
+└─────────────┘                     └──────────────────┘                      └──────────────
 ```
 
-**两组件架构**:
-1. **Blender Addon** — 运行在 Blender 内部，提供 TCP Socket Server（默认 `localhost:9876`）
-2. **MCP Server** — 独立 Python 进程，桥接 LLM 客户端和 Blender Addon
+**Two-component architecture**:
+1. **Blender Addon** — runs inside Blender, provides a TCP Socket Server (default `localhost:9876`)
+2. **MCP Server** — standalone Python process that bridges the LLM client and the Blender Addon
 
 ---
 
-## 安装步骤
+## Installation
 
-### 1. 安装 Blender Addon
+### 1. Install the Blender Addon
 
-**方式 A: 从 ZIP 安装**
-1. 下载 addon ZIP: `https://projects.blender.org/lab/blender_mcp/releases/download/v1.0.0/mcp-1.0.0.zip`
+**Option A: From ZIP**
+1. Download addon ZIP: `https://projects.blender.org/lab/blender_mcp/releases/download/v1.0.0/mcp-1.0.0.zip`
 2. Blender → Edit → Preferences → Add-ons → Install from Disk
-3. 启用 "Blender MCP" 插件
-4. 在插件设置中确认 Host/Port（默认 `localhost:9876`）
+3. Enable the "Blender MCP" addon
+4. Confirm Host/Port in addon settings (default `localhost:9876`)
 
-**方式 B: 拖拽安装**
-- 将 ZIP 文件拖入 Blender 窗口（需要拖拽两次：第一次添加 Blender Lab 仓库，第二次安装插件）
+**Option B: Drag & Drop**
+- Drag the ZIP file into the Blender window (twice: first to add the Blender Lab repository, second to install the addon)
 
-**方式 C: 从源码安装**
-- 源码位于: `mcp/blmcp/` 和 `addon/blender_mcp_addon/`
+**Option C: From Source**
+- Source code locations: `mcp/blmcp/` and `addon/blender_mcp_addon/`
 
-### 2. 启动 Blender MCP Server
+### 2. Start the Blender MCP Server
 
 ```bash
-# 安装依赖
-cd C:\Users\haowe\Downloads\blender_mcp
+# Install dependencies
+cd path/to/blender_mcp
 pip install mcp pyyaml starlette
 
-# 启动 MCP Server（stdio 模式）
+# Start MCP Server (stdio mode)
 python -m blmcp --transport stdio
 
-# 或 HTTP 模式（默认 127.0.0.1:8000）
+# Or HTTP mode (default 127.0.0.1:8000)
 python -m blmcp --transport http --host 127.0.0.1 --port 8000
 ```
 
-### 3. 配置 mcporter
+### 3. Configure mcporter
 
 ```bash
-# 添加 Blender MCP Server 配置
+# Add Blender MCP Server config
 mcporter config add blender-mcp --transport stdio --command "python -m blmcp --transport stdio"
 
-# 或使用 HTTP 模式
+# Or use HTTP mode
 mcporter config add blender-mcp --transport http --url "http://127.0.0.1:8000"
 
-# 验证连接
+# Verify connection
 mcporter list blender-mcp --schema
 ```
 
 ---
 
-## 使用方式
+## Usage
 
-### 方式一: 通过 mcporter 调用（推荐）
+### Method 1: Via mcporter (recommended)
 
 ```bash
-# 列出所有可用工具
+# List all available tools
 mcporter list blender-mcp --schema
 
-# 调用具体工具
+# Call a specific tool
 mcporter call blender-mcp.execute_blender_code code='import bpy; result = {"objects": [o.name for o in bpy.data.objects]}'
 
 mcporter call blender-mcp.get_objects_summary
 
 mcporter call blender-mcp.get_object_detail_summary object_name="Cube"
 
-# 搜索 API 文档
+# Search API docs
 mcporter call blender-mcp.search_api_docs query="bpy.ops.object.delete"
 
-# 搜索用户手册
+# Search user manual
 mcporter call blender-mcp.search_manual_docs query="Geometry Nodes"
 
-# 截图
+# Screenshot
 mcporter call blender-mcp.get_screenshot_of_window_as_image
 
-# 渲染 viewport
+# Render viewport
 mcporter call blender-mcp.render_viewport_to_path output_path="C:\\render.png"
 ```
 
-### 方式二: 直连 Blender Addon TCP Socket（轻量模式）
+### Method 2: Direct TCP Socket to Blender Addon (lightweight)
 
-当不需要完整的 MCP Server 时，可以直接通过 TCP Socket 与 Blender Addon 通信：
+When you don't need the full MCP Server, you can communicate directly with the Blender Addon via TCP Socket:
 
 ```python
 import socket
 import json
 
 def send_to_blender(code: str, host="localhost", port=9876, timeout=30.0) -> dict:
-    """直接发送 Python 代码到 Blender Addon 执行"""
+    """Send Python code directly to Blender Addon for execution."""
     request = json.dumps({
         "type": "execute",
         "code": code,
@@ -144,7 +144,7 @@ def send_to_blender(code: str, host="localhost", port=9876, timeout=30.0) -> dic
     line, _, _ = buf.partition(b"\0")
     return json.loads(line.decode("utf-8"))
 
-# 示例：获取场景中所有物体名称
+# Example: get all object names in the scene
 response = send_to_blender(
     'import bpy\nresult = {"objects": [o.name for o in bpy.data.objects]}'
 )
@@ -152,16 +152,16 @@ print(response)
 # {"status": "ok", "result": {"objects": ["Cube", "Camera", "Light"]}}
 ```
 
-### 方式三: Blender 后台模式（无头渲染/批处理）
+### Method 3: Blender Background Mode (headless rendering / batch)
 
 ```bash
-# 启动 Blender 后台 MCP Server
+# Start Blender background MCP Server
 blender --background myscene.blend --command blender_mcp --host localhost --port 9876
 
-# 或使用 CLI 执行代码
+# Or execute code via CLI
 blender --background myscene.blend --python-expr "
 import bpy
-# 你的代码
+# your code
 result = {'count': len(bpy.data.objects)}
 print('__BLMCP_RESULT__' + str(result))
 "
@@ -169,80 +169,79 @@ print('__BLMCP_RESULT__' + str(result))
 
 ---
 
-## 内置工具清单（20 个）
+## Built-in Tools (20 total)
 
-### 核心工具
-| 工具名 | 描述 | 参数 |
-|--------|------|------|
-| `execute_blender_code` | 执行任意 Python 代码（完整 bpy 访问） | `code: str` |
-| `execute_blender_code_for_cli` | 在后台 Blender 进程中执行代码 | `blend_file: str, code: str` |
+### Core
+| Tool | Description | Params |
+|------|-------------|--------|
+| `execute_blender_code` | Execute arbitrary Python code (full bpy access) | `code: str` |
+| `execute_blender_code_for_cli` | Execute code in a background Blender process | `blend_file: str, code: str` |
 
-### 场景分析
-| 工具名 | 描述 | 参数 |
-|--------|------|------|
-| `get_objects_summary` | 获取场景物体层次结构和基本信息 | 无 |
-| `get_object_detail_summary` | 获取指定物体的详细信息 | `object_name: str` |
-| `get_blendfile_summary_datablocks` | 分析 .blend 文件的 data-blocks | `blend_file: str` |
-| `get_blendfile_summary_missing_files` | 检查缺失的外部文件引用 | `blend_file: str` |
-| `get_blendfile_summary_of_linked_libraries` | 列出链接的外部库 | `blend_file: str` |
-| `get_blendfile_summary_path_info` | 分析 .blend 文件路径信息 | `blend_file: str` |
-| `get_blendfile_summary_usage_guess` | 推测 .blend 文件用途 | `blend_file: str` |
+### Scene Analysis
+| Tool | Description | Params |
+|------|-------------|--------|
+| `get_objects_summary` | Get scene object hierarchy and basic info | none |
+| `get_object_detail_summary` | Get detailed info for a specific object | `object_name: str` |
+| `get_blendfile_summary_datablocks` | Analyze .blend file data-blocks | `blend_file: str` |
+| `get_blendfile_summary_missing_files` | Check for missing external file references | `blend_file: str` |
+| `get_blendfile_summary_of_linked_libraries` | List linked external libraries | `blend_file: str` |
+| `get_blendfile_summary_path_info` | Analyze .blend file path information | `blend_file: str` |
+| `get_blendfile_summary_usage_guess` | Guess the purpose of a .blend file | `blend_file: str` |
 
-### 截图/渲染
-| 工具名 | 描述 | 参数 |
-|--------|------|------|
-| `get_screenshot_of_window_as_image` | 获取 Blender 窗口截图 | 无 |
-| `get_screenshot_of_area_as_image` | 获取特定区域截图 | `area_type: str` |
-| `get_screenshot_of_window_as_json` | 获取窗口布局的 JSON 描述 | 无 |
-| `render_viewport_to_path` | 渲染 viewport 到文件 | `output_path: str` |
-| `render_thumbnail_to_path` | 渲染缩略图到文件 | `output_path: str` |
+### Screenshots & Rendering
+| Tool | Description | Params |
+|------|-------------|--------|
+| `get_screenshot_of_window_as_image` | Capture Blender window screenshot | none |
+| `get_screenshot_of_area_as_image` | Capture specific area screenshot | `area_type: str` |
+| `get_screenshot_of_window_as_json` | Get window layout as JSON description | none |
+| `render_viewport_to_path` | Render viewport to file | `output_path: str` |
+| `render_thumbnail_to_path` | Render thumbnail to file | `output_path: str` |
 
-### 导航
-| 工具名 | 描述 | 参数 |
-|--------|------|------|
-| `jump_to_tab_by_name` | 跳转到指定编辑器标签 | `tab_name: str` |
-| `jump_to_tab_by_space_type` | 跳转到指定空间类型 | `space_type: str` |
-| `jump_to_view3d_object_by_name` | 在 3D 视图中定位到物体 | `object_name: str` |
-| `jump_to_view3d_object_data_by_name` | 在 3D 视图中定位到物体数据 | `data_name: str` |
+### Navigation
+| Tool | Description | Params |
+|------|-------------|--------|
+| `jump_to_tab_by_name` | Jump to a named editor tab | `tab_name: str` |
+| `jump_to_tab_by_space_type` | Jump to a space type | `space_type: str` |
+| `jump_to_view3d_object_by_name` | Focus on an object in 3D View | `object_name: str` |
+| `jump_to_view3d_object_data_by_name` | Focus on object data in 3D View | `data_name: str` |
 
-### 文档搜索
-| 工具名 | 描述 | 参数 |
-|--------|------|------|
-| `search_api_docs` | 搜索 Blender Python API 文档 | `query: str` |
-| `search_manual_docs` | 搜索 Blender 用户手册 | `query: str` |
-| `get_python_api_docs` | 获取 Python API 文档 | `query: str` |
+### Documentation Search
+| Tool | Description | Params |
+|------|-------------|--------|
+| `search_api_docs` | Search Blender Python API docs | `query: str` |
+| `search_manual_docs` | Search Blender user manual | `query: str` |
+| `get_python_api_docs` | Get Python API docs | `query: str` |
 
 ---
 
-## 通信协议详解
+## Communication Protocol
 
-### TCP Socket 协议
+### TCP Socket Protocol
 
-**请求格式**（null-byte 分隔的 JSON）:
+**Request format** (null-byte delimited JSON):
 ```json
 {"type": "execute", "code": "import bpy\nresult = {'key': 'value'}", "strict_json": false}\0
 ```
 
-**响应格式**:
+**Response format**:
 ```json
-// 成功
+// Success
 {"status": "ok", "result": {"key": "value"}, "stdout": "", "stderr": ""}\0
 
-// 失败
+// Error
 {"status": "error", "message": "Traceback...", "stdout": "", "stderr": ""}\0
 ```
 
-### 代码执行约定
+### Code Execution Conventions
 
-- 必须将返回值赋值给 `result` 变量（必须为 dict）
-- `strict_json=True`: 严格 JSON 序列化，非序列化值会报错
-- `strict_json=False`: 使用 `repr()` 作为非 JSON 值的回退
-- 支持延迟响应（deferred response）: 返回 `check_is_finished` 可调用对象用于长时间任务
+- Assign return value to the `result` variable (must be a dict)
+- `strict_json=True`: strict JSON serialization; non-serializable values will error
+- `strict_json=False`: uses `repr()` as fallback for non-JSON values
+- Supports deferred responses: return a `check_is_finished` callable for long-running tasks
 
-### 示例：获取物体信息
+### Example: Get Object Info
 
 ```python
-# 发送的代码
 import bpy
 obj = bpy.data.objects.get("Cube")
 if obj:
@@ -256,7 +255,7 @@ else:
     result = {"error": "Object not found"}
 ```
 
-### 示例：创建物体
+### Example: Create an Object
 
 ```python
 import bpy
@@ -271,43 +270,66 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 
 ---
 
-## 环境变量
+## Environment Variables
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `BLENDER_MCP_HOST` | `localhost` | Blender Addon 主机地址 |
-| `BLENDER_MCP_PORT` | `9876` | Blender Addon 端口 |
-| `BLENDER_PATH` | `blender` | Blender 可执行文件路径 |
-
----
-
-## 安全注意事项
-
-⚠️ **官方安全警告**: MCP Server 会执行 LLM 生成的代码，**没有任何安全沙箱**。
-
-**Addon 内置的弱沙箱**（`WeakSandboxForLLM`）:
-- 阻止 `sys.exit()` 调用
-- 阻止危险操作符: `wm.quit_blender`, `wm.read_factory_settings`, `wm.read_factory_userpref`, `wm.read_userpref`
-
-**建议**: 在虚拟机或无敏感数据的系统中运行。
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `BLENDER_MCP_HOST` | `localhost` | Blender Addon host address |
+| `BLENDER_MCP_PORT` | `9876` | Blender Addon port |
+| `BLENDER_PATH` | `blender` | Path to Blender executable |
 
 ---
 
-## 常见错误排查
+## Security Notes
 
-| 错误 | 原因 | 解决方案 |
-|------|------|----------|
-| `ConnectionRefusedError` | Blender 未运行或 Addon 未启动 | 启动 Blender，启用 MCP Addon，点击 "Start Server" |
-| `ConnectionError: Empty response` | 网络超时或 Addon 崩溃 | 检查 Blender 控制台输出，确认端口正确 |
-| `result is not JSON-serializable` | 返回了 Blender 对象 | 使用 `strict_json=False` 或手动转换为 dict |
-| `Blender executable not found` | 未找到 blender 命令 | 设置 `BLENDER_PATH` 环境变量 |
-| `Deferred responses not supported` | 后台模式不支持延迟响应 | 使用同步代码或切换到 GUI 模式 |
+⚠️ **Official security warning**: The MCP Server executes LLM-generated code with **no sandboxing**.
+
+**Built-in weak sandbox** (`WeakSandboxForLLM`):
+- Blocks `sys.exit()` calls
+- Blocks dangerous operators: `wm.quit_blender`, `wm.read_factory_settings`, `wm.read_factory_userpref`, `wm.read_userpref`
+
+**Recommendation**: Run in a VM or on a system without sensitive data.
 
 ---
 
-## OpenClaw 集成
+## Troubleshooting
 
-### 配置 openclaw.json
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `ConnectionRefusedError` | Blender not running or Addon not started | Start Blender, enable MCP Addon, click "Start Server" |
+| `ConnectionError: Empty response` | Network timeout or Addon crashed | Check Blender console output, verify port |
+| `result is not JSON-serializable` | Returned a Blender object | Use `strict_json=False` or manually convert to dict |
+| `Blender executable not found` | Blender command not found | Set `BLENDER_PATH` environment variable |
+| `Deferred responses not supported` | Background mode doesn't support deferred responses | Use synchronous code or switch to GUI mode |
+
+---
+
+## Blender 5.1 API Compatibility Notes
+
+### Action Layered Structure (Breaking Change)
+
+In Blender 5.1, `Action.fcurves` was removed. The new layered animation system uses:
+
+```python
+# ❌ Old (5.0 and earlier)
+fcurves = action.fcurves
+
+# ✅ Blender 5.1+
+fcurves = action.layers[0].strips[0].channelbags[0].fcurves
+```
+
+### Principled BSDF Node Input Renames
+
+| Old (5.0) | New (5.1) |
+|-----------|-----------|
+| `inputs['Transmission']` | `inputs['Transmission Weight']` |
+| `inputs['Emission']` | `inputs['Emission Color']` + `inputs['Emission Strength']` |
+
+---
+
+## OpenClaw Integration
+
+### Configure openclaw.json
 
 ```json
 {
@@ -318,7 +340,7 @@ result = {"status": "created", "name": bpy.context.active_object.name}
           "blender-mcp": {
             "command": "python",
             "args": ["-m", "blmcp", "--transport", "stdio"],
-            "cwd": "C:\\Users\\haowe\\Downloads\\blender_mcp",
+            "cwd": "path/to/blender_mcp",
             "env": {
               "BLENDER_MCP_HOST": "localhost",
               "BLENDER_MCP_PORT": "9876"
@@ -331,23 +353,23 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 }
 ```
 
-### 通过 mcporter CLI
+### Via mcporter CLI
 
 ```bash
-# 列出工具
+# List tools
 mcporter call blender-mcp.get_objects_summary
 
-# 执行代码
+# Execute code
 mcporter call blender-mcp.execute_blender_code code='import bpy; result = {"count": len(bpy.data.objects)}'
 ```
 
 ---
 
-## 快速启动检查清单
+## Quick Start Checklist
 
-- [ ] Blender 5.1+ 已安装
-- [ ] MCP Addon 已安装并启用
-- [ ] MCP Server 已启动（`python -m blmcp --transport stdio`）
-- [ ] mcporter 已安装（`npm install -g mcporter`）
-- [ ] 端口 9876 可用（默认）
-- [ ] `BLENDER_PATH` 环境变量已设置（如需要）
+- [ ] Blender 5.1+ installed
+- [ ] MCP Addon installed and enabled
+- [ ] MCP Server started (`python -m blmcp --transport stdio`)
+- [ ] mcporter installed (`npm install -g mcporter`)
+- [ ] Port 9876 available (default)
+- [ ] `BLENDER_PATH` environment variable set (if needed)
