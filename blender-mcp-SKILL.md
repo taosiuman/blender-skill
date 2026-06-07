@@ -1,10 +1,10 @@
 ---
 name: blender-mcp
-description: "Connect to and control Blender via the official Blender MCP Server. Supports two modes: full MCP Server + mcporter (recommended) and direct TCP Socket (lightweight). Covers 20 built-in tools plus arbitrary bpy code execution."
+description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1 and 5.2 LTS."
 homepage: https://www.blender.org/lab/mcp-server/
 metadata:
   openclaw:
-    emoji: 🔗
+    emoji: 🎨
     requires:
       bins: ["blender", "mcporter"]
     install:
@@ -19,7 +19,7 @@ metadata:
 
 Connect to and control a running Blender instance via the official Blender MCP Server.
 
-**Version requirement**: Blender 5.1+ (mandatory)
+**Version support**: Blender 5.1+ and 5.2 LTS Beta (API compatibility notes included below)
 
 ---
 
@@ -95,7 +95,6 @@ mcporter list blender-mcp --schema
 mcporter call blender-mcp.execute_blender_code code='import bpy; result = {"objects": [o.name for o in bpy.data.objects]}'
 
 mcporter call blender-mcp.get_objects_summary
-
 mcporter call blender-mcp.get_object_detail_summary object_name="Cube"
 
 # Search API docs
@@ -115,8 +114,6 @@ mcporter call blender-mcp.render_viewport_to_path output_path="C:\\render.png"
 
 ⚠️ **Warning**: This mode sends caller-supplied code directly to Blender with no guardrails. Review code before execution.
 
-When you don't need the full MCP Server, you can communicate directly with the Blender Addon via TCP Socket:
-
 ```python
 import socket
 import json
@@ -128,12 +125,12 @@ def send_to_blender(code: str, host="localhost", port=9876, timeout=30.0) -> dic
         "code": code,
         "strict_json": False,
     }) + "\0"
-    
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.settimeout(timeout)
         sock.connect((host, port))
         sock.sendall(request.encode("utf-8"))
-        
+
         buf = bytearray()
         while True:
             chunk = sock.recv(65536)
@@ -142,7 +139,7 @@ def send_to_blender(code: str, host="localhost", port=9876, timeout=30.0) -> dic
             buf.extend(chunk)
             if b"\0" in buf:
                 break
-    
+
     line, _, _ = buf.partition(b"\0")
     return json.loads(line.decode("utf-8"))
 
@@ -292,29 +289,10 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 
 ### Security Best Practices
 
-**1. Keep server local only**
-- Always use `localhost` / `127.0.0.1` — never bind to `0.0.0.0`
-- Never expose port 9876 to your network or firewall rules
-- Stop the MCP server when not actively using it
-
-**2. Review code before execution**
-- Prefer scoped built-in tools (e.g., `get_objects_summary`) over raw `execute_blender_code` for routine tasks
-- Review generated Python code before running, especially for:
-  - File operations (save, export, delete)
-  - Batch modifications (all objects, all materials)
-  - External API calls (network requests, subprocess)
-
-**3. Protect your projects**
-- Keep backups of important `.blend` files before running automated code
-- Test new code on a copy of your project first
-- Use version control for production scenes
-
-**4. Verify external dependencies**
-- Download the MCP addon only from official Blender Lab sources
-- Verify pip package names (`mcp`, `pyyaml`, `starlette`) match official releases
-- Do not use unofficial mirrors or third-party builds
-
-**Recommendation**: Run in a VM or on a system without sensitive data.
+1. **Keep server local only** — Always use `localhost` / `127.0.0.1`; never bind to `0.0.0.0`
+2. **Review code before execution** — Prefer scoped built-in tools over raw `execute_blender_code`
+3. **Protect your projects** — Keep backups of important `.blend` files
+4. **Verify external dependencies** — Download addon only from official Blender Lab sources
 
 ---
 
@@ -344,12 +322,192 @@ fcurves = action.fcurves
 fcurves = action.layers[0].strips[0].channelbags[0].fcurves
 ```
 
-### Principled BSDF Node Input Renames
+### Brush API: `use_*` → `stroke_method` Enum
+
+```python
+# ❌ Old (5.0)
+brush.use_airbrush = True
+
+# ✅ 5.1+
+brush.stroke_method = 'AIRBRUSH'  # Options: AIRBRUSH, SPACE, ANCHORED, LINE, CURVE, DRAG_DOT
+```
+
+### VSE Time Property Renames
+
+| Old (5.0) | New (5.1) |
+|-----------|-----------|
+| `frame_final_duration` | `duration` |
+| `frame_final_start` | `left_handle` |
+| `frame_final_end` | `right_handle` |
+| `frame_duration` | `content_duration` |
+
+### Principled BSDF Input Renames
 
 | Old (5.0) | New (5.1) |
 |-----------|-----------|
 | `inputs['Transmission']` | `inputs['Transmission Weight']` |
 | `inputs['Emission']` | `inputs['Emission Color']` + `inputs['Emission Strength']` |
+
+### Other 5.1 Changes
+- `sculpt.sample_color` → `paint.sample_color`
+- `bpy.app.cachedir` — new standard cache directory
+- `bpy.app.handlers.exit_pre` — new exit handler
+- Python 3.13 runtime
+
+---
+
+## Blender 5.2 LTS Compatibility Notes (Beta)
+
+> Blender 5.2 LTS entered Beta on 2026-06-03. API is frozen; RC expected 2026-07-08, release 2026-07-14.
+
+### 🔴 Breaking Changes (12 total — all Beta confirmed)
+
+#### 1. Geometry Nodes Modifier API Rewrite
+
+```python
+# ❌ 5.1 and earlier
+modifier["SocketName"] = 5.0
+modifier["SocketName_use_attribute"] = True
+modifier["SocketName_attribute_name"] = "some_input"
+
+# ✅ 5.2+
+modifier.properties.inputs.SocketName.value = 5.0
+modifier.properties.inputs.SocketName.type = "ATTRIBUTE"
+modifier.properties.inputs.SocketName.attribute_name = "some_input"
+modifier.properties.outputs.SocketName.attribute_name = "some_output"
+
+# ✅ Compatible pattern
+import bpy
+if bpy.app.version >= (5, 2, 0):
+    val = modifier.properties.inputs.SocketName.value
+else:
+    val = modifier["SocketName"]
+```
+
+#### 2. Principled BSDF Node Renamed
+- `Transmission` → `Transmission Weight`
+- Already applies from 5.1; ensure plugin references match
+
+#### 3. `paint.eraser_brush` API Removed
+- No longer needs manual setting; last eraser brush auto-activates
+
+#### 4. Automasking → MeshAutomaskingSettings (17 properties migrated)
+
+```python
+# ❌ Old
+brush.use_automasking_topology = True
+brush.automasking_cavity_factor = 0.5
+
+# ✅ 5.2+
+brush.mesh_automasking_settings.use_automasking_topology = True
+brush.mesh_automasking_settings.cavity_factor = 0.5
+```
+
+All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use_automasking_boundary_edges`, `use_automasking_boundary_face_sets`, `use_automasking_cavity`, `use_automasking_cavity_inverted`, `use_automasking_start_normal`, `use_automasking_view_normal`, `automasking_boundary_edges_propagation_steps`, `automasking_cavity_factor`, `automasking_cavity_blur_steps`, `automasking_cavity_curve`, `automasking_cavity_curve_op`, `automasking_start_normal_limit`, `automasking_start_normal_falloff`, `automasking_view_normal_limit`, `automasking_view_normal_falloff`
+
+#### 5. VSE `strip.use_linear_modifiers` Removed
+#### 6. VSE `timecode files` Feature Removed
+#### 7. `UILayout.template_palette` `color` Parameter Removed
+#### 8. Compare / Random Value Node Socket Identifiers Changed
+#### 9. Asset Library Index Shift — "All Libraries" and "Essentials" now occupy first two indices
+#### 10. Evaluated Meshes Naming Change — Geo Nodes created meshes no longer share object's original mesh name
+#### 11. Brush `use_*` → `stroke_method` (see 5.1 section above)
+#### 12. VSE Time Property Renames (see 5.1 section above)
+
+---
+
+### 🟢 High-Value New APIs (5.2 LTS)
+
+#### Python API
+| API | Description |
+|-----|-------------|
+| `bpy.data.all_ids` | Single iterator over ALL data-blocks |
+| `WindowManager.reports` | Read-only reports list with session-wide unique uid |
+| `bpy.data.libraries.load()` input | Now exposes nested library paths |
+| `Window.screenshot()` | Get window pixel data without saving to file |
+| `gpu.init()` | Initialize GPU backend in `--background` mode |
+| `mathutils` slice step | `vector[begin:end:step]` for Vector/Matrix/Color/Euler |
+| Blender Arrays slice step | `image.pixels[begin:end:step]` — e.g., `pixels[3::4]` for alpha channel |
+| `path_foreach` options | EXPAND_TOKENS, EXPAND_SEQUENCES, EXPAND_CACHES |
+| Annotations API | `frame.strokes.new()`, `stroke.points.add(count, pressure, strength)`, `stroke.points.remove(index)`, `frame.strokes.remove(stroke)` |
+| `UILayout.link` / `textbox` | Styled link buttons and multi-line text buttons |
+| `imbuf` extended | Pixel-level image access, format conversion, buffer protocol |
+| Node panel collapse | Programmatically open/close node panels from Python |
+| Node Tool input values | Set Node Tool parameters programmatically in 5.2 |
+
+#### Geometry Nodes
+| Node / Feature | Description |
+|----------------|-------------|
+| **Physics (experimental)** | XPBD Solver, Cloth Dynamics modifier, Hair Dynamics, Effector system |
+| **Mesh Bevel** | Long-awaited procedural bevel node |
+| **Geometry Bundles** | Set/Get Geometry Bundle — attach arbitrary data (fields, closures) to geometry |
+| **Lists data type** | New core type alongside single/field/grid — Length, Get, Filter, Sort |
+| **Sample Sound Frequencies** | Audio-driven animation without keyframe baking |
+| **PCA** | Principal Component Analysis for auto-alignment |
+| **Transfer Attributes** | Transfer attributes between two geometries |
+| **3D ↔ Screen Space** | Bundled transform nodes (3D to Screen, Screen to 3D, Project with Depth) |
+| **Collection Children** | Recursive access to collection children as lists |
+| **Empty Objects** | Geo Nodes modifiers on Empty objects |
+| **Capture Attribute Selection** | Selection input for efficiency |
+| **NURBS Order/Weight** | Set NURBS Order and Weight nodes |
+| **Scene Frame default input** | Float/int sockets default to current frame |
+| **Self-object default** | Object sockets can default to self-object |
+| **Merge by Distance split** | Now: Merge Points + Cluster by Distance + Cluster by Connected |
+
+#### Cycles
+| Feature | Description |
+|---------|-------------|
+| **Texture Cache** | `.tx` files reduce memory 34-77% in texture-heavy scenes. Enable: Performance > Texture Cache + Auto Generate. CLI: `blender scene.blend --command maketx` |
+| **Raycast Attributes** | Access attributes at intersection point (Cycles only) |
+| **SSS Negative Anisotropy** | Principled/Subsurface BSDF: -1 to 1 range |
+| **World Cast Shadows** | World can now cast shadows |
+| **OSL GPU** | Texture cache improves OSL performance + adds GPU support |
+| **Simplify Texture Resolution** | Percentage-based texture scaling (50%, 25%) |
+
+#### EEVEE
+| Feature | Description |
+|---------|-------------|
+| **Shader Raycast** | Screen-space raytracing node |
+| **Light Path Intensity** | Global indirect light intensity control |
+| **Texture pool -40%** | Vulkan: 406MB → 245MB |
+
+#### Grease Pencil
+| Feature | Description |
+|---------|-------------|
+| **Fill Tool Delaunay** | New Delaunay solver: precise geometry, auto gap detection, scale-independent, faster |
+| **Draw Tool curves** | Bézier / Catmull-Rom / NURBS curve types |
+| **Line Materials placement** | Count / Density / Radius modes with randomization |
+| **`layer.layer_masks` API** | Add/remove layer masks via Python |
+
+#### Video Sequencer
+| Feature | Description |
+|---------|-------------|
+| **Compositor Effect Strip** | Use compositor node trees for VSE transitions/effects (0/1/2 inputs + fader) |
+| **Compositor GPU acceleration** | In VSE modifiers |
+| **`strip.connections`** | API to find connected strips |
+
+#### Sculpt
+| Feature | Description |
+|---------|-------------|
+| **Scene Project brush** | Displace vertices toward other objects (like Shrinkwrap) |
+| **Add Primitive in Sculpt Mode** | Cube/Cone/Cylinder directly in sculpt |
+| **Color Filter unified color** | Uses scene unified colors; Ctrl-X quick fill |
+| **Dyntopo confirmation removed** | No more confirmation dialog when switching back to Sculpt |
+| **Voxel Remesher attribute interpolation** | Smooth vertex/corner attribute interpolation |
+
+#### Assets
+| Feature | Description |
+|---------|-------------|
+| **Online Asset Library** | Browse and download from remote hosted libraries |
+| **Asset Library index shift** | "All Libraries" and "Essentials" now at indices 0 and 1 |
+
+#### Other
+| Feature | Description |
+|---------|-------------|
+| **LoopTools built-in** | Circle/Space/Flatten now native — no addon needed |
+| **Hydra 2.0 API** | OpenUSD provides abstraction layer |
+| **Animation +125%** | Action evaluation 32.8→74.1 fps (4 threads) |
+| **Gaussian Smooth F-Curve** | Non-destructive curve smoothing modifier |
 
 ---
 
