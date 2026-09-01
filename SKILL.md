@@ -1,9 +1,9 @@
 ---
 name: blender-mcp
-description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1 and 5.2 LTS."
+description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.0.0
+version: 2.1.0
 metadata:
   openclaw:
     requires:
@@ -20,7 +20,7 @@ metadata:
 
 Connect to and control a running Blender instance via the official Blender MCP Server.
 
-**Version support**: Blender 5.1+ and 5.2 LTS Beta (API compatibility notes included below)
+**Version support**: Blender 5.1+, 5.2 LTS, and 5.3 Alpha (API compatibility notes included below)
 
 ---
 
@@ -509,6 +509,62 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 | **Hydra 2.0 API** | OpenUSD provides abstraction layer |
 | **Animation +125%** | Action evaluation 32.8→74.1 fps (4 threads) |
 | **Gaussian Smooth F-Curve** | Non-destructive curve smoothing modifier |
+
+---
+
+## Blender 5.3 Alpha Compatibility Notes
+
+> Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
+> 📝 最后扫描：2026-08-31 — 66 Added + 8 Removed + 5 Renamed
+
+### 🔴 5.3 Alpha Breaking Changes (5 Renamed)
+
+#### Brush Unified Input 属性重命名 (4 项)
+
+```python
+# ❌ 5.2 及更早
+brush.use_inverse_smooth_pressure = True
+brush.use_unified_input_samples = True
+brush.use_unified_strength = True
+brush.use_unified_weight = True
+
+# ✅ 5.3 Alpha（名称可能再次变更，Alpha 阶段）
+# 这些属性已重命名，具体新名称待 Beta 确认
+# 兼容写法：检查 bpy.app.version
+```
+
+#### PreferencesSystem 重命名 (1 项)
+
+```python
+# ❌ 5.2
+prefs.system.geometry_nodes_stack_limit
+
+# ✅ 5.3 Alpha
+prefs.system.nodes_stack_limit
+```
+
+### 🟡 5.3 Alpha 高价值新增 (66 Added, 精选)
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| `BlendData.project/project_init/project_clear` | **项目概念** — 全新 | 项目管理/工作区插件 |
+| `ID.deep_hash` | 数据块内容深度哈希 | 变更检测/缓存失效 |
+| `WindowManager.undo_stack` | 程序化撤销栈 | 自定义撤销操作 |
+| `Scene.compositor_effects` | 场景合成器效果列表 | 程序化合成管线 |
+| `Preferences.use_project_auto_save` | 项目自动保存 | 自动备份增强 |
+| `RenderEngine.view_pause/view_resume` | 渲染暂停/恢复 | 交互式渲染控制 |
+| `RegionView3D.pause_render/support_pause_render` | 视图暂停渲染 | 性能优化插件 |
+| `Scene.wrap_timeline_navigation` | 时间线循环导航 | 动画工作流 |
+| `AssetMetaData.webpage` | 资产网页链接 | 在线资产浏览 |
+| `Brush.use_unified_color/use_unified_size` | 统一颜色/尺寸 | 笔刷控制简化 |
+| `SpaceOutliner.expand_on_focus` | 大纲聚焦展开 | UI 增强 |
+| `Window.global_areas` | 全局区域访问 | 窗口布局插件 |
+| `CompositorNodeTree.allow_usage_in_scene_compositor_effect` | 合成器场景效果 | VSE 合成管线 |
+| `Collection.importer` / `CollectionImport.filepath` | 集合导入 | 资产管线 |
+
+### 完整变更记录
+
+详见技能目录 `docs/blender-knowledge/api-changes-5.2.md`
 
 ---
 
