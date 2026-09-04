@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.1.0
+version: 2.2.0
 metadata:
   openclaw:
     requires:
@@ -48,12 +48,23 @@ Connect to and control a running Blender instance via the official Blender MCP S
 2. Blender → Edit → Preferences → Add-ons → Install from Disk
 3. Enable the "Blender MCP" addon
 4. Confirm Host/Port in addon settings (default `localhost:9876`)
+5. **Optional: Enable "Auto Start"** to start the server automatically when Blender opens
 
 **Option B: Drag & Drop**
 - Drag the ZIP file into the Blender window (twice: first to add the Blender Lab repository, second to install the addon)
 
 **Option C: From Source**
 - Source code locations: `mcp/blmcp/` and `addon/blender_mcp_addon/`
+
+**Option D: Quick Install via uvx** (Simplest)
+```bash
+# Install uv package manager first (if not installed)
+# Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+# Mac/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Start MCP server directly (auto-downloads dependencies)
+uvx blender-mcp
+```
 
 ### 2. Start the Blender MCP Server
 
@@ -277,6 +288,7 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | `BLENDER_MCP_HOST` | `localhost` | Blender Addon host address |
 | `BLENDER_MCP_PORT` | `9876` | Blender Addon port |
 | `BLENDER_PATH` | `blender` | Path to Blender executable |
+| `DISABLE_TELEMETRY` | `false` | Set to `true` to disable anonymous usage telemetry |
 
 ---
 
@@ -515,7 +527,7 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 ## Blender 5.3 Alpha Compatibility Notes
 
 > Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
-> 📝 最后扫描：2026-08-31 — 66 Added + 8 Removed + 5 Renamed
+> 📝 最后扫描：2026-09-03 — 66 Added + 8 Removed + 5 Renamed (无新增变更)
 
 ### 🔴 5.3 Alpha Breaking Changes (5 Renamed)
 
@@ -606,11 +618,117 @@ mcporter call blender-mcp.execute_blender_code code='import bpy; result = {"coun
 
 ---
 
+## Geometry Nodes MCP Integration
+
+The official Blender MCP Server supports advanced Geometry Nodes inspection and debugging capabilities (Blender 5.2+):
+
+### Querying Data Relations
+```bash
+# Find which objects use a specific material
+mcporter call blender-mcp.execute_blender_code code='
+import bpy
+material_name = "pebbles"
+users = [obj.name for obj in bpy.data.objects if obj.active_material and obj.active_material.name == material_name]
+result = {"material": material_name, "users": users, "count": len(users)}
+'
+```
+
+### Scene Debugging
+```bash
+# Find highest poly-count object in scene
+mcporter call blender-mcp.execute_blender_code code='
+import bpy
+mesh_objects = [(obj.name, len(obj.data.polygons)) for obj in bpy.data.objects if obj.type == "MESH"]
+if mesh_objects:
+    highest = max(mesh_objects, key=lambda x: x[1])
+    result = {"object": highest[0], "faces": highest[1]}
+else:
+    result = {"error": "No mesh objects found"}
+'
+```
+
+### Geometry Node Tree Inspection
+```bash
+# Inspect Geometry Nodes modifier connections
+mcporter call blender-mcp.execute_blender_code code='
+import bpy
+obj = bpy.data.objects["GEO-pebble"]
+if obj.modifiers:
+    mod = obj.modifiers[0]
+    if mod.type == "NODES":
+        node_tree = mod.node_group
+        nodes_info = [{"name": n.name, "type": n.type, "inputs": [i.name for i in n.inputs]} for n in node_tree.nodes]
+        result = {"modifier": mod.name, "node_tree": node_tree.name, "nodes": nodes_info}
+    else:
+        result = {"error": "Not a Geometry Nodes modifier"}
+else:
+    result = {"error": "No modifiers found"}
+'
+```
+
+### Common Geometry Nodes MCP Patterns
+
+| Task | Example Query |
+|------|---------------|
+| Find material users | `"Which objects use the material: [name]"` |
+| Scene density analysis | `"Analyze mesh density distribution in this scene"` |
+| Debug missing data | `"What is the object with the highest poly-count?"` |
+| Node tree structure | `"Show me the Geometry Nodes connections for [object]"` |
+
+---
+
+## Gemini CLI Integration
+
+Blender MCP can be used with Google Gemini CLI (in addition to Claude):
+
+```bash
+# Install Gemini CLI
+npm install -g @google/gemini-cli
+
+# Configure MCP in ~/.gemini/settings.json
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "env": {
+        "BLENDER_MCP_HOST": "localhost",
+        "BLENDER_MCP_PORT": "9876"
+      }
+    }
+  }
+}
+
+# Start Gemini CLI with Blender MCP
+gemini
+```
+
+---
+
 ## Quick Start Checklist
 
 - [ ] Blender 5.1+ installed
 - [ ] MCP Addon installed and enabled
-- [ ] MCP Server started (`python -m blmcp --transport stdio`)
+- [ ] **Auto Start enabled** (optional, recommended)
+- [ ] MCP Server started (`python -m blmcp --transport stdio` or `uvx blender-mcp`)
 - [ ] mcporter installed (`npm install -g mcporter`)
 - [ ] Port 9876 available (default)
 - [ ] `BLENDER_PATH` environment variable set (if needed)
+- [ ] `DISABLE_TELEMETRY=true` (optional, for privacy)
+
+---
+
+## Changelog
+
+### v2.2.0 (2026-09-04)
+- ✅ Added Geometry Nodes MCP integration section with debugging examples
+- ✅ Documented Auto Start feature for addon preferences
+- ✅ Added uvx quick installation method
+- ✅ Added DISABLE_TELEMETRY environment variable
+- ✅ Added Gemini CLI integration guide
+- ✅ Enhanced Quick Start Checklist with new options
+
+### v2.1.0 (Previous)
+- Blender 5.2 LTS Beta API compatibility notes
+- 12 breaking changes documented
+- 66 new APIs catalogued
