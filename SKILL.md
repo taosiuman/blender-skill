@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.2.0
+version: 2.3.0
 metadata:
   openclaw:
     requires:
@@ -527,9 +527,18 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 ## Blender 5.3 Alpha Compatibility Notes
 
 > Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
-> 📝 最后扫描：2026-09-03 — 66 Added + 8 Removed + 5 Renamed (无新增变更)
+> 📝 最后扫描：2026-09-06 — 新增 Python API 5 项 + Geo Nodes 13 项 + GPU 兼容性变更 1 项
 
-### 🔴 5.3 Alpha Breaking Changes (5 Renamed)
+### 🔴 5.3 Alpha Breaking Changes (5 Renamed + 1 GPU 兼容性)
+
+#### GPU 兼容性变更 (新增 09-06)
+```python
+# ⚠️ gpu.types.GPUBatch.draw_instanced 行为变更
+# 现在优先使用 gpu_InstanceIndex（包含 base_instance）
+# 与 Metal/Vulkan 内部工作方式对齐
+# commit: 6f64632716
+# 影响：使用自定义 GPU 着色器的插件需要测试兼容性
+```
 
 #### Brush Unified Input 属性重命名 (4 项)
 
@@ -555,24 +564,32 @@ prefs.system.geometry_nodes_stack_limit
 prefs.system.nodes_stack_limit
 ```
 
-### 🟡 5.3 Alpha 高价值新增 (66 Added, 精选)
+### 🟡 5.3 Alpha 高价值新增 (精选)
 
+#### Python API 新增 (09-06 扫描)
 | API | 说明 | 插件开发价值 |
 |-----|------|----------|
-| `BlendData.project/project_init/project_clear` | **项目概念** — 全新 | 项目管理/工作区插件 |
-| `ID.deep_hash` | 数据块内容深度哈希 | 变更检测/缓存失效 |
-| `WindowManager.undo_stack` | 程序化撤销栈 | 自定义撤销操作 |
-| `Scene.compositor_effects` | 场景合成器效果列表 | 程序化合成管线 |
-| `Preferences.use_project_auto_save` | 项目自动保存 | 自动备份增强 |
-| `RenderEngine.view_pause/view_resume` | 渲染暂停/恢复 | 交互式渲染控制 |
-| `RegionView3D.pause_render/support_pause_render` | 视图暂停渲染 | 性能优化插件 |
-| `Scene.wrap_timeline_navigation` | 时间线循环导航 | 动画工作流 |
-| `AssetMetaData.webpage` | 资产网页链接 | 在线资产浏览 |
-| `Brush.use_unified_color/use_unified_size` | 统一颜色/尺寸 | 笔刷控制简化 |
-| `SpaceOutliner.expand_on_focus` | 大纲聚焦展开 | UI 增强 |
-| `Window.global_areas` | 全局区域访问 | 窗口布局插件 |
-| `CompositorNodeTree.allow_usage_in_scene_compositor_effect` | 合成器场景效果 | VSE 合成管线 |
-| `Collection.importer` / `CollectionImport.filepath` | 集合导入 | 资产管线 |
+| `NodeTreeInterface.root_panel` | 获取节点树界面项层级中的顶层面板 | 节点编辑器 UI 插件 |
+| `UILayout.label_multiline()` | 自动换行的多行标签 | UI 布局增强 |
+| `WindowManager.undo_stack` | 程序化只读撤销栈访问 | 自定义撤销操作 |
+| `WindowManager.try_activate_rna_button()` | 激活引用 RNA 数据的 UI 按钮 | UI 交互增强 |
+| `mathutils.KDTree(dimensions=2)` | KDTree 支持 2D 树 | 2D 空间查询优化 |
+| ⚠️ `bpy.data.all_ids` 顺序变更 | 内部实现修改，ID 顺序改变 | 不要依赖 all_ids 的顺序！ |
+
+#### Geometry Nodes 新增 (09-06 扫描)
+| 节点/功能 | 说明 | 插件开发价值 |
+|-----------|------|----------|
+| **Combine List** | 合并多个列表 | 列表数据处理增强 |
+| **Get Vector Component** | 通过整数索引获取 x/y/z 分量 | 向量操作简化 |
+| **Rasterize Points** | 将点转换为栅格（光栅化） | 点云→网格转换 |
+| **Deactivate Voxels** | 从体积栅格中移除活动体素 | 体积数据处理 |
+| **Grid Topology Boolean** | 活动栅格体素的布尔运算 | 体积建模 |
+| **NURBS input nodes** | NURBS 输入节点组 | NURBS 曲线控制 |
+| Curve to Mesh "Miter Scale" | 斜接缩放选项 | 曲线转网格控制 |
+| Curve to Tube "Miter Scale" | 斜接缩放选项 | 管道建模 |
+| Realize Instances "Preserve Normals" | 保留负变换行列式实例的法线 | 实例化处理 |
+| GP data input nodes | Grease Pencil 数据输入节点 | GP 数据处理 |
+| Grid sampling modes | 改进的二次/三次采样模式 | 栅格采样质量 |
 
 ### 完整变更记录
 
@@ -719,6 +736,13 @@ gemini
 ---
 
 ## Changelog
+
+### v2.3.0 (2026-09-06)
+- ✅ 5.3 Alpha 扫描更新 (09-06): Python API 6 项新增 + Geo Nodes 13 项新增 + GPU 兼容性变更
+- ✅ 新增 `NodeTreeInterface.root_panel`, `UILayout.label_multiline()`, `WindowManager.try_activate_rna_button()`
+- ✅ 新增 `mathutils.KDTree` 2D 树支持 + `bpy.data.all_ids` 顺序变更警告
+- ✅ 新增 Geo Nodes: Combine List, Get Vector Component, Rasterize Points, Deactivate Voxels, Grid Topology Boolean, NURBS input nodes, Curve to Mesh/Tube Miter Scale, Realize Instances Preserve Normals, GP data input nodes
+- ✅ 新增 GPU 兼容性变更: `gpu.types.GPUBatch.draw_instanced` 行为变更 (commit 6f64632716)
 
 ### v2.2.0 (2026-09-04)
 - ✅ Added Geometry Nodes MCP integration section with debugging examples
