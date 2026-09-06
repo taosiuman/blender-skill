@@ -8,10 +8,9 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 - **Blender 5.3 Alpha support** — 20 new APIs documented (Python API 6 + Geo Nodes 13 + GPU compat 1)
 - **Geo Nodes volume processing** — Rasterize Points, Deactivate Voxels, Grid Topology Boolean
-- **UI plugin enhancements** — NodeTreeInterface.root_panel, UILayout.label_multiline()
+- **UI plugin enhancements** — NodeTreeInterface.root_panel, UILabel_multiline()
 - **2D spatial queries** — mathutils.KDTree supports 2D trees
 - **GPU compat warning** — gpu.types.GPUBatch.draw_instanced behavior change
-- **All 5.2 LTS breaking changes** — 12 changes with migration code
 
 ## Features
 
