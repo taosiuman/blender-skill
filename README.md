@@ -2,15 +2,23 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.3.0** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.4.0** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.3.0
+## What's New in v2.4.0
 
-- **Blender 5.3 Alpha support** — 20 new APIs documented (Python API 6 + Geo Nodes 13 + GPU compat 1)
-- **Geo Nodes volume processing** — Rasterize Points, Deactivate Voxels, Grid Topology Boolean
-- **UI plugin enhancements** — NodeTreeInterface.root_panel, UILabel_multiline()
-- **2D spatial queries** — mathutils.KDTree supports 2D trees
-- **GPU compat warning** — gpu.types.GPUBatch.draw_instanced behavior change
+- **5.3 Alpha complete scan** — 50+ new Python APIs documented from official change_log.html
+- **🔴 Critical breaking change** — `NodesModifier.panels` removed (affects all Geo Nodes modifier plugins!)
+- **🔴 Theme API removals** — `ThemeFileBrowser.selected_file`, `ThemeSpaceGeneric/Gradient.header_text` removed
+- **Project API** — `BlendData.project/project_init/project_clear` for project management
+- **Render Pause/Resume** — `RenderEngine.view_pause/view_resume`, `RegionView3D.pause_render`
+- **Scene Compositor Effects** — `Scene.compositor_effects` for scene-level compositing
+- **ID deep_hash** — Content-based hashing for all data blocks
+- **Outliner 11 filters** — Fine-grained filtering for materials, modifiers, constraints, etc.
+- **Asset Library auth** — `UserAssetLibrary.auth_token/use_auth_token/uuid` for online libraries
+- **Brush enhancements** — `curve_auto_smooth/curve_hardness/curve_spacing` + unified properties
+- **Rotation conversion** — `Object/PoseBone.convert_rotation_mode()`
+- **EEVEE denoising** — `ViewLayerEEVEE.denoising_store_passes`
+- **Brush rename corrected** — `use_inverse_smooth_pressure` → `use_smooth_pressure` (not reversed)
 
 ## Features
 
