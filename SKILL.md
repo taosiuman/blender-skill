@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.3.0
+version: 2.4.0
 metadata:
   openclaw:
     requires:
@@ -529,9 +529,11 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 > Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
 > 📝 最后扫描：2026-09-06 — 新增 Python API 5 项 + Geo Nodes 13 项 + GPU 兼容性变更 1 项
 
-### 🔴 5.3 Alpha Breaking Changes (5 Renamed + 1 GPU 兼容性)
+### 🔴 5.3 Alpha Breaking Changes (6 Removed + 5 Renamed + 1 GPU 兼容性)
 
-#### GPU 兼容性变更 (新增 09-06)
+> 📝 最后扫描：2026-09-07 11:00 — 完整官方 change_log 核实
+
+#### GPU 兼容性变更 (09-06)
 ```python
 # ⚠️ gpu.types.GPUBatch.draw_instanced 行为变更
 # 现在优先使用 gpu_InstanceIndex（包含 base_instance）
@@ -540,22 +542,62 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 # 影响：使用自定义 GPU 着色器的插件需要测试兼容性
 ```
 
-#### Brush Unified Input 属性重命名 (4 项)
+#### 🔴 NodesModifier.panels 移除 (09-07 新发现！关键！)
+```python
+# ❌ 5.2 及更早
+modifier.panels  # 访问 Geo Nodes 修饰器的面板属性
+
+# ✅ 5.3 Alpha — 已移除！
+# Geo Nodes 修饰器不再有 panels 属性
+# 兼容写法：
+import bpy
+if bpy.app.version >= (5, 3, 0):
+    # 使用 modifier.properties.inputs/outputs 替代
+    pass
+else:
+    panels = modifier.panels
+```
+
+#### 🔴 Theme API 移除 (09-07 新发现)
+```python
+# ❌ 以下主题属性在 5.3 Alpha 中已移除：
+# ThemeFileBrowser.selected_file
+# ThemeSpaceGeneric.header_text / header_text_hi / title
+# ThemeSpaceGradient.header_text / header_text_hi / title
+
+# 影响：自定义主题插件需要移除对这些属性的引用
+```
+
+#### Brush Unified Input 属性重命名 (4 项，09-07 修正映射)
 
 ```python
 # ❌ 5.2 及更早
 brush.use_inverse_smooth_pressure = True
-brush.use_unified_input_samples = True
-brush.use_unified_strength = True
-brush.use_unified_weight = True
 
-# ✅ 5.3 Alpha（名称可能再次变更，Alpha 阶段）
-# 这些属性已重命名，具体新名称待 Beta 确认
-# 兼容写法：检查 bpy.app.version
+# ✅ 5.3 Alpha（09-07 官方确认的新名称）
+brush.use_smooth_pressure = True        # ← use_inverse_smooth_pressure 重命名而来
+brush.use_unified_input_samples = True  # ← 新增统一输入属性
+brush.use_unified_strength = True       # ← 新增统一强度属性
+brush.use_unified_weight = True         # ← 新增统一权重属性
+
+# 兼容写法：
+import bpy
+if bpy.app.version >= (5, 3, 0):
+    brush.use_smooth_pressure = True
+else:
+    brush.use_inverse_smooth_pressure = True
+```
+
+#### PreferencesExperimental 重命名 (1 项)
+```python
+# ❌ 5.2
+prefs.experimental.use_sculpt_texture_paint
+
+# ✅ 5.3 Alpha
+prefs.experimental.use_3d_texture_paint
 ```
 
 #### PreferencesSystem 重命名 (1 项)
-
 ```python
 # ❌ 5.2
 prefs.system.geometry_nodes_stack_limit
@@ -566,15 +608,68 @@ prefs.system.nodes_stack_limit
 
 ### 🟡 5.3 Alpha 高价值新增 (精选)
 
-#### Python API 新增 (09-06 扫描)
+#### Python API 新增 (09-07 完整扫描 - 50+ 项)
+
+**🔥 高价值新增（插件开发必备）:**
+
 | API | 说明 | 插件开发价值 |
 |-----|------|----------|
-| `NodeTreeInterface.root_panel` | 获取节点树界面项层级中的顶层面板 | 节点编辑器 UI 插件 |
-| `UILayout.label_multiline()` | 自动换行的多行标签 | UI 布局增强 |
-| `WindowManager.undo_stack` | 程序化只读撤销栈访问 | 自定义撤销操作 |
-| `WindowManager.try_activate_rna_button()` | 激活引用 RNA 数据的 UI 按钮 | UI 交互增强 |
-| `mathutils.KDTree(dimensions=2)` | KDTree 支持 2D 树 | 2D 空间查询优化 |
-| ⚠️ `bpy.data.all_ids` 顺序变更 | 内部实现修改，ID 顺序改变 | 不要依赖 all_ids 的顺序！ |
+| **Project API** | `BlendData.project` / `project_init()` / `project_clear()` | 项目管理插件 |
+| `Preferences.use_project_auto_save` | 项目自动保存设置 | 项目管理集成 |
+| **Render Pause/Resume** | `RenderEngine.view_pause()` / `view_resume()` | 渲染控制插件 |
+| `RegionView3D.pause_render` / `support_pause_render` | 视口渲染暂停 | 视口控制插件 |
+| `CYCLES.view_pause` / `view_resume` | Cycles 渲染暂停 | 渲染控制插件 |
+| **Scene Compositor Effects** | `Scene.compositor_effects` | 场景级合成效果 |
+| `CompositorNodeTree.allow_usage_in_scene_compositor_effect` | 允许节点树用于场景合成 | 合成插件 |
+| **ID deep_hash** | `ID.deep_hash` 基于内容的哈希 | 数据块去重/缓存 |
+| **Outliner 11 细粒度过滤器** | `use_filter_object_materials/modifiers/constraints/shape_keys/vertex_groups/data/animation` + `use_filter_bone_collections/pose_bones/grease_pencil_effects` | 大纲视图插件 |
+| `UILayout.template_compositor_strip_inputs` | 合成器 Strip 输入模板 | VSE 插件 |
+| `UILayout.template_scene_compositor_effects` | 场景合成效果模板 | 合成 UI 插件 |
+| `RegionView3D.view_camera_roll` | 相机旋转控制 | 相机控制插件 |
+| `Window.global_areas` | 全局区域访问 | 窗口管理插件 |
+
+**📦 Asset Library 增强 (09-07 新发现):**
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| `UserAssetLibrary.auth_token` | 资产库认证令牌 | 在线资产库插件 |
+| `UserAssetLibrary.use_auth_token` | 启用认证 | 在线资产库插件 |
+| `UserAssetLibrary.uuid` / `invalid_uuid` | 资产库 UUID | 资产库管理 |
+| `UserAssetLibrary.is_project_defined` | 项目定义的资产库 | 项目资产管理 |
+| `AssetMetaData.webpage` | 资产网页链接 | 资产浏览器插件 |
+
+**🎨 Brush 增强 (09-07 新发现):**
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| `Brush.curve_auto_smooth` | 自动平滑曲线 | 笔刷插件 |
+| `Brush.curve_hardness` | 硬度曲线 | 笔刷插件 |
+| `Brush.curve_spacing` | 间距曲线 | 笔刷插件 |
+| `Brush.use_unified_color` | 统一颜色 | 笔刷插件 |
+| `Brush.use_unified_size` | 统一尺寸 | 笔刷插件 |
+| `BrushCapabilitiesSculpt.has_tip_roundness` | 笔尖圆润度能力 | 雕刻插件 |
+
+**🔧 其他新增 (09-07 扫描):**
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| `Object.convert_rotation_mode()` | 旋转模式转换 | 动画插件 |
+| `PoseBone.convert_rotation_mode()` | 骨骼旋转模式转换 | 动画插件 |
+| `ViewLayerEEVEE.denoising_store_passes` | 降噪存储通道 | EEVEE 渲染插件 |
+| `ViewLayerEEVEE.denoising_pass_use_albedo_roughness_weighting` | 降噪权重 | EEVEE 渲染插件 |
+| `PreferencesEdit.clamp_strips_by_default` | VSE Strip 默认限制 | VSE 插件 |
+| `PreferencesEdit.default_strip_length` | VSE 默认 Strip 长度 | VSE 插件 |
+| `PreferencesSystem.use_rt_shadows` | 光线追踪阴影 | 渲染设置插件 |
+| `Region.search_filter` | 区域搜索过滤 | UI 插件 |
+| `ToolSettings.use_transform_data_pivot` | 变换数据枢轴 | 变换工具插件 |
+| `Collection.importer` | 集合导入器 | 导入插件 |
+| `CollectionImport.filepath` | 导入文件路径 | 导入插件 |
+| `Scene.wrap_timeline_navigation` | 时间线循环导航 | 动画插件 |
+| `SpaceDopeSheetEditor.cache_compositor` | 合成缓存 | 动画/合成插件 |
+| `RenderSettings.use_compositor_frames_cache` | 合成帧缓存 | 渲染插件 |
+| `SceneEEVEE.time_limit` | EEVEE 时间限制 | EEVEE 渲染插件 |
+| `SpaceOutliner.expand_on_focus` | 大纲展开行为 | 大纲 UI 插件 |
+| `SpaceProperties.show_properties_compositor` | 显示合成属性 | 属性 UI 插件 |
 
 #### Geometry Nodes 新增 (09-06 扫描)
 | 节点/功能 | 说明 | 插件开发价值 |
@@ -736,6 +831,26 @@ gemini
 ---
 
 ## Changelog
+
+### v2.4.0 (2026-09-07)
+- ✅ 5.3 Alpha 完整扫描 (09-07): 基于官方 change_log.html 全量核实
+- 🔴 新增破坏性变更: `NodesModifier.panels` 移除（Geo Nodes 插件关键影响！）
+- 🔴 Theme API 移除: `ThemeFileBrowser.selected_file`, `ThemeSpaceGeneric/Gradient.header_text/header_text_hi/title`
+- ✅ Brush 重命名修正: `use_inverse_smooth_pressure` → `use_smooth_pressure`（非反向）
+- ✅ 新增 Project API: `BlendData.project/project_init/project_clear` + `Preferences.use_project_auto_save`
+- ✅ 新增渲染暂停/恢复: `RenderEngine.view_pause/view_resume`, `RegionView3D.pause_render`
+- ✅ 新增场景合成效果: `Scene.compositor_effects`, `CompositorNodeTree.allow_usage_in_scene_compositor_effect`
+- ✅ 新增 ID.deep_hash: 数据块内容哈希
+- ✅ 新增 Outliner 11 项细粒度过滤器
+- ✅ 新增 UILayout 合成模板: `template_compositor_strip_inputs`, `template_scene_compositor_effects`
+- ✅ 新增 Asset Library 认证: `UserAssetLibrary.auth_token/use_auth_token/uuid`
+- ✅ 新增 Brush 曲线/统一属性: `curve_auto_smooth/curve_hardness/curve_spacing/use_unified_color/use_unified_size`
+- ✅ 新增旋转模式转换: `Object/PoseBone.convert_rotation_mode()`
+- ✅ 新增 EEVEE 降噪: `ViewLayerEEVEE.denoising_store_passes`
+- ✅ 新增 VSE 偏好设置: `PreferencesEdit.clamp_strips_by_default/default_strip_length`
+- ✅ 新增 RT Shadows: `PreferencesSystem.use_rt_shadows`
+- ✅ 新增 Collection Import: `Collection.importer`, `CollectionImport.filepath`
+- ✅ 总计: Python API 50+ 项新增 + 6 项移除 + 5 项重命名
 
 ### v2.3.0 (2026-09-06)
 - ✅ 5.3 Alpha 扫描更新 (09-06): Python API 6 项新增 + Geo Nodes 13 项新增 + GPU 兼容性变更
