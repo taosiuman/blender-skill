@@ -2,23 +2,19 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.4.0** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.0** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.4.0
+## What's New in v2.5.0
 
-- **5.3 Alpha complete scan** — 50+ new Python APIs documented from official change_log.html
-- **🔴 Critical breaking change** — `NodesModifier.panels` removed (affects all Geo Nodes modifier plugins!)
-- **🔴 Theme API removals** — `ThemeFileBrowser.selected_file`, `ThemeSpaceGeneric/Gradient.header_text` removed
-- **Project API** — `BlendData.project/project_init/project_clear` for project management
-- **Render Pause/Resume** — `RenderEngine.view_pause/view_resume`, `RegionView3D.pause_render`
-- **Scene Compositor Effects** — `Scene.compositor_effects` for scene-level compositing
-- **ID deep_hash** — Content-based hashing for all data blocks
-- **Outliner 11 filters** — Fine-grained filtering for materials, modifiers, constraints, etc.
-- **Asset Library auth** — `UserAssetLibrary.auth_token/use_auth_token/uuid` for online libraries
-- **Brush enhancements** — `curve_auto_smooth/curve_hardness/curve_spacing` + unified properties
-- **Rotation conversion** — `Object/PoseBone.convert_rotation_mode()`
-- **EEVEE denoising** — `ViewLayerEEVEE.denoising_store_passes`
-- **Brush rename corrected** — `use_inverse_smooth_pressure` → `use_smooth_pressure` (not reversed)
+- **🔴 PR #348: Server instructions** — `FastMCP(instructions=...)` 传递代码正确性指南
+  - 解决本地化 UI 中 `nodes["Principled BSDF"]` 返回 None 的问题（#26, #110）
+  - 使用 `n.type == "BSDF_PRINCIPLED"` 而非节点名称（跨语言兼容）
+- **🟡 PR #344: `export_scene` 命令** — 场景导出为第一类工具
+  - 支持 GLB/FBX 格式导出到自定义路径
+  - 参数：`filepath`, `format="glb"`, `object_names=None`, `selection_only=False`, `apply_modifiers=True`
+- **🟡 PR #345: 插件自动启动改进** — 延迟启动 + 重试机制
+  - 使用 Blender 持久化定时器延迟启动（避免冷启动时序问题）
+  - 启动失败后自动重试，文件加载后重新调度
 
 ## Features
 
