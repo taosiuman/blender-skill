@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.4.0
+version: 2.5.0
 metadata:
   openclaw:
     requires:
@@ -831,6 +831,26 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.0 (2026-09-08)
+- ✅ 跟踪 blender-mcp 社区 PR（3 项重要改进，均为 OPEN 状态）：
+  - 🔴 **PR #348**: Server instructions 机制 - 通过 `FastMCP(instructions=...)` 传递代码正确性指南
+    - 解决 #26（本地化 UI 中 `nodes["Principled BSDF"]` 返回 None）
+    - 解决 #110（渲染引擎标识符在版本间不一致）
+    - 使用 `n.type == "BSDF_PRINCIPLED"` 而非节点名称（跨语言兼容）
+    - 使用 `try/except TypeError` 获取动态枚举的完整值列表
+  - 🟡 **PR #344**: `export_scene` 命令 - 场景导出为第一类工具
+    - 支持 GLB/FBX 格式导出到自定义路径
+    - 参数：`filepath`, `format="glb"`, `object_names=None`, `selection_only=False`, `apply_modifiers=True`
+    - 自动处理选择、修改器烘焙、GLB 标志位
+    - 返回：`{path, bytes, selection_only, exported: [...]}`
+  - 🟡 **PR #345**: 插件自动启动改进 - 延迟启动 + 重试机制
+    - 使用 Blender 持久化定时器延迟启动（避免冷启动时序问题）
+    - 等待场景存在后使用配置的端口
+    - 启动失败后自动重试
+    - 文件加载后重新调度
+    - 手动断开不会被后续文件加载覆盖
+- ✅ Blender API 无新变更（change_log 与 2026-09-07 一致）
 
 ### v2.4.0 (2026-09-07)
 - ✅ 5.3 Alpha 完整扫描 (09-07): 基于官方 change_log.html 全量核实
