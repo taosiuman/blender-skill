@@ -2,7 +2,7 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.5.1** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.2** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
 ## What's New in v2.5.1
 
