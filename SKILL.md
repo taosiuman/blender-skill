@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.0
+version: 2.5.1
 metadata:
   openclaw:
     requires:
@@ -831,6 +831,16 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.1 (2026-09-09)
+- ✅ 5.3 Alpha API 增量更新 (09-09): 基于官方 change_log 扫描
+- ✅ 新增 Cycles 元数据属性: BatchRenameAction.name, CyclesCurveRenderSettings.name, CyclesCustomCameraSettings.name, CyclesLightSettings.name, CyclesMaterialSettings.name, CyclesMeshSettings.name, CyclesObjectSettings.name, CyclesRenderLayerSettings.name, CyclesRenderSettings.name, CyclesView3DShadingSettings.name, CyclesVisibilitySettings.name, CyclesWorldSettings.name
+- ✅ 新增 GLTF2_filter_action.name
+- ✅ 新增 NodeSetting.name
+- ✅ 新增 Paint 可视化曲线: Paint.show_auto_smooth_curve, Paint.show_hardness_curve, Paint.show_spacing_curve
+- ✅ 新增 CompositorStrip.properties
+- ✅ 新增 SequencerTimelineOverlay.show_thumbnails
+- ✅ 总计: 18 项新增 API (均为小功能增强，无破坏性变更)
 
 ### v2.5.0 (2026-09-08)
 - ✅ 跟踪 blender-mcp 社区 PR（3 项重要改进，均为 OPEN 状态）：
