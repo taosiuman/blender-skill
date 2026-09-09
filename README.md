@@ -2,9 +2,17 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.5.0** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.1** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.5.0
+## What's New in v2.5.1
+
+- **✅ 5.3 Alpha 增量更新** — 18 项新增 API
+  - Cycles 元数据属性: 12 个 *.name 属性（BatchRenameAction, CyclesCurveRenderSettings 等）
+  - Paint 可视化曲线: show_auto_smooth_curve, show_hardness_curve, show_spacing_curve
+  - CompositorStrip.properties, SequencerTimelineOverlay.show_thumbnails
+  - GLTF2_filter_action.name, NodeSetting.name
+
+## What's New in v2.5.0 (Previous)
 
 - **🔴 PR #348: Server instructions** — `FastMCP(instructions=...)` 传递代码正确性指南
   - 解决本地化 UI 中 `nodes["Principled BSDF"]` 返回 None 的问题（#26, #110）
