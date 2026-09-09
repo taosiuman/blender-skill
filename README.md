@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 **Version: 2.5.2** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.5.1
+## What's New in v2.5.2
 
 - **✅ 5.3 Alpha 增量更新** — 18 项新增 API
   - Cycles 元数据属性: 12 个 *.name 属性（BatchRenameAction, CyclesCurveRenderSettings 等）
