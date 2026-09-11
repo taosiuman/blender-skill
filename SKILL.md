@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.2
+version: 2.5.4
 metadata:
   openclaw:
     requires:
@@ -608,9 +608,18 @@ prefs.system.nodes_stack_limit
 
 ### 🟡 5.3 Alpha 高价值新增 (精选)
 
-#### Python API 新增 (09-07 完整扫描 - 50+ 项)
+#### Python API 新增 (09-11 完整扫描 - 4 项新增，累计 50+ 项)
 
-**🔥 高价值新增（插件开发必备）:**
+**🔥 最新新增（09-11）:**
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| **CyclesPreferences.has_dlss_gpu_devices** | DLSS GPU 设备检测 | 渲染设置插件 |
+| **CyclesRenderSettings.preview_denoising_upscale_quality** | 预览降噪升级质量 | 渲染控制插件 |
+| **RegionView3D.use_view_flip_x** | 视口水平翻转 | 视口控制插件 |
+| **SpaceNodeOverlay.show_text_info** | 节点叠加层文本信息 | 节点编辑器插件 |
+
+**📋 之前扫描的高价值新增（插件开发必备）:**
 
 | API | 说明 | 插件开发价值 |
 |-----|------|----------|
@@ -831,6 +840,26 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.4 (2026-09-11)
+- ✅ 5.3 Alpha API 增量更新 (09-11): 基于官方 change_log 三次扫描
+- ✅ 新增 CyclesPreferences.has_dlss_gpu_devices: DLSS GPU 设备检测
+- ✅ 新增 CyclesRenderSettings.preview_denoising_upscale_quality: 预览降噪升级质量
+- ✅ 新增 RegionView3D.use_view_flip_x: 视口水平翻转
+- ✅ 新增 SpaceNodeOverlay.show_text_info: 节点叠加层文本信息显示
+- ✅ 总计: 4 项新增 API (均为渲染/视口/节点 UI 增强，无破坏性变更)
+
+### v2.5.3 (2026-09-10)
+- ✅ 5.3 Alpha API 增量更新 (09-10): 基于官方 change_log 二次扫描
+- ✅ 新增 WindowManager.undo_stack: 编程访问撤销栈
+- ✅ 新增 UILayout.property_split_factor: 属性分割系数控制
+- ✅ WindowManager.invoke_popup 参数变更: 新增 `auto_keymap` 参数
+- ✅ WindowManager.popover 参数变更: 新增 `auto_keymap` 参数
+- ✅ WindowManager.popover_begin__internal 参数变更: 新增 `auto_keymap` 参数
+- ✅ 总计: 5 项新增/变更 API (均为 UI/窗口管理增强，无破坏性变更)
+
+### v2.5.2 (2026-09-10)
+- ✅ 版本号同步至 2.5.2（与 GitHub/ClawHub 对齐）
 
 ### v2.5.1 (2026-09-09)
 - ✅ 5.3 Alpha API 增量更新 (09-09): 基于官方 change_log 扫描
