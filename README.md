@@ -2,15 +2,22 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.5.2** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.4** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.5.2
+## What's New in v2.5.4
 
-- **✅ 5.3 Alpha 增量更新** — 18 项新增 API
-  - Cycles 元数据属性: 12 个 *.name 属性（BatchRenameAction, CyclesCurveRenderSettings 等）
-  - Paint 可视化曲线: show_auto_smooth_curve, show_hardness_curve, show_spacing_curve
-  - CompositorStrip.properties, SequencerTimelineOverlay.show_thumbnails
-  - GLTF2_filter_action.name, NodeSetting.name
+- **✅ 5.3 Alpha 增量更新** — 4 项新增 API
+  - CyclesPreferences.has_dlss_gpu_devices: DLSS GPU 设备检测
+  - CyclesRenderSettings.preview_denoising_upscale_quality: 预览降噪升级质量
+  - RegionView3D.use_view_flip_x: 视口水平翻转
+  - SpaceNodeOverlay.show_text_info: 节点叠加层文本信息
+
+## What's New in v2.5.3 (Previous)
+
+- **✅ 5.3 Alpha 增量更新** — 5 项新增/变更 API
+  - WindowManager.undo_stack: 编程访问撤销栈
+  - UILayout.property_split_factor: 属性分割系数控制
+  - WindowManager.invoke_popup/popover 参数变更: 新增 auto_keymap 参数
 
 ## What's New in v2.5.0 (Previous)
 
