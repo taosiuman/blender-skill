@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.4
+version: 2.5.5
 metadata:
   openclaw:
     requires:
@@ -614,6 +614,9 @@ prefs.system.nodes_stack_limit
 
 | API | 说明 | 插件开发价值 |
 |-----|------|----------|
+| **RenderEngine.bl_write_viewport_depth** | 自定义渲染引擎写入视口深度缓冲 | 自定义渲染器插件 |
+| **FileHandler.label_with_extensions** | 文件处理器显示带扩展名的标签 | 导入/导出插件 |
+| **UILayout.label_markdown** | UI 布局中渲染 Markdown 格式文本 | UI 插件增强 |
 | **CyclesPreferences.has_dlss_gpu_devices** | DLSS GPU 设备检测 | 渲染设置插件 |
 | **CyclesRenderSettings.preview_denoising_upscale_quality** | 预览降噪升级质量 | 渲染控制插件 |
 | **RegionView3D.use_view_flip_x** | 视口水平翻转 | 视口控制插件 |
@@ -840,6 +843,13 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.5 (2026-09-16)
+- ✅ 5.3 Alpha API 增量更新 (09-16): 基于官方 change_log 第四次扫描
+- ✅ 新增 RenderEngine.bl_write_viewport_depth: 自定义渲染引擎写入视口深度缓冲
+- ✅ 新增 FileHandler.label_with_extensions: 文件处理器显示带扩展名的标签
+- ✅ 新增 UILayout.label_markdown: UI 布局中渲染 Markdown 格式文本
+- ✅ 总计: 3 项新增 API (均为渲染/文件处理/UI 增强，无破坏性变更)
 
 ### v2.5.4 (2026-09-11)
 - ✅ 5.3 Alpha API 增量更新 (09-11): 基于官方 change_log 三次扫描
