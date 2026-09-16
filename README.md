@@ -2,15 +2,14 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.5.4** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.5** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.5.4
+## What's New in v2.5.5
 
-- **✅ 5.3 Alpha 增量更新** — 4 项新增 API
-  - CyclesPreferences.has_dlss_gpu_devices: DLSS GPU 设备检测
-  - CyclesRenderSettings.preview_denoising_upscale_quality: 预览降噪升级质量
-  - RegionView3D.use_view_flip_x: 视口水平翻转
-  - SpaceNodeOverlay.show_text_info: 节点叠加层文本信息
+- **✅ 5.3 Alpha 增量更新** — 3 项新增 API
+  - RenderEngine.bl_write_viewport_depth: 自定义渲染引擎写入视口深度缓冲
+  - FileHandler.label_with_extensions: 文件处理器显示带扩展名的标签
+  - UILayout.label_markdown: UI 布局中渲染 Markdown 格式文本
 
 ## What's New in v2.5.3 (Previous)
 
