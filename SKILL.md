@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.5
+version: 2.5.6
 metadata:
   openclaw:
     requires:
@@ -527,7 +527,7 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 ## Blender 5.3 Alpha Compatibility Notes
 
 > Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
-> 📝 最后扫描：2026-09-06 — 新增 Python API 5 项 + Geo Nodes 13 项 + GPU 兼容性变更 1 项
+> 📝 最后扫描：2026-09-18 — 新增 Python API 1 项（PointCloud.type），累计 50+ 项
 
 ### 🔴 5.3 Alpha Breaking Changes (6 Removed + 5 Renamed + 1 GPU 兼容性)
 
@@ -682,6 +682,7 @@ prefs.system.nodes_stack_limit
 | `SceneEEVEE.time_limit` | EEVEE 时间限制 | EEVEE 渲染插件 |
 | `SpaceOutliner.expand_on_focus` | 大纲展开行为 | 大纲 UI 插件 |
 | `SpaceProperties.show_properties_compositor` | 显示合成属性 | 属性 UI 插件 |
+| `PointCloud.type` | 点云类型属性 | 点云数据处理插件 |
 
 #### Geometry Nodes 新增 (09-06 扫描)
 | 节点/功能 | 说明 | 插件开发价值 |
@@ -843,6 +844,11 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.6 (2026-09-18)
+- ✅ 5.3 Alpha API 增量更新 (09-18): 基于官方 change_log 第五次扫描
+- ✅ 新增 PointCloud.type: 点云类型属性
+- ✅ 总计: 1 项新增 API (点云数据增强，无破坏性变更)
 
 ### v2.5.5 (2026-09-16)
 - ✅ 5.3 Alpha API 增量更新 (09-16): 基于官方 change_log 第四次扫描
