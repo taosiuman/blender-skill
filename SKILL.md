@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.6
+version: 2.5.7
 metadata:
   openclaw:
     requires:
@@ -682,6 +682,7 @@ prefs.system.nodes_stack_limit
 | `SceneEEVEE.time_limit` | EEVEE 时间限制 | EEVEE 渲染插件 |
 | `SpaceOutliner.expand_on_focus` | 大纲展开行为 | 大纲 UI 插件 |
 | `SpaceProperties.show_properties_compositor` | 显示合成属性 | 属性 UI 插件 |
+| `BrushGpencilSettings.use_cyclic_stroke` | Grease Pencil 循环笔触 | GP 笔刷插件 |
 | `PointCloud.type` | 点云类型属性 | 点云数据处理插件 |
 
 #### Geometry Nodes 新增 (09-06 扫描)
@@ -844,6 +845,11 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.7 (2026-09-20)
+- ✅ 5.3 Alpha API 增量更新 (09-20): 基于官方 change_log 第六次扫描
+- ✅ 新增 BrushGpencilSettings.use_cyclic_stroke: Grease Pencil 循环笔触设置
+- ✅ 总计: 1 项新增 API (GP 笔刷增强，无破坏性变更)
 
 ### v2.5.6 (2026-09-18)
 - ✅ 5.3 Alpha API 增量更新 (09-18): 基于官方 change_log 第五次扫描
