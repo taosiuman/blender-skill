@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.8
+version: 2.5.9
 metadata:
   openclaw:
     requires:
@@ -20,7 +20,29 @@ metadata:
 
 Connect to and control a running Blender instance via the official Blender MCP Server.
 
+通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
+
 **Version support**: Blender 5.1+, 5.2 LTS, and 5.3 Alpha (API compatibility notes included below)
+
+---
+
+## ⚠️ Security Warning / 安全警告
+
+**English:**
+This skill provides full access to Blender's Python API (`bpy`) through the MCP channel. Code executed via `execute_blender_code` can:
+- Read, modify, or delete files on your system
+- Execute arbitrary Python code (including network requests)
+- Alter or corrupt your Blender project data
+
+**Always review code before execution. Keep backups of important `.blend` files.**
+
+**中文：**
+此技能通过 MCP 通道提供对 Blender Python API (`bpy`) 的完全访问。通过 `execute_blender_code` 执行的代码可以：
+- 读取、修改或删除系统上的文件
+- 执行任意 Python 代码（包括网络请求）
+- 更改或损坏 Blender 项目数据
+
+**执行前请始终审查代码。保持重要 `.blend` 文件的备份。**
 
 ---
 
@@ -56,22 +78,25 @@ Connect to and control a running Blender instance via the official Blender MCP S
 **Option C: From Source**
 - Source code locations: `mcp/blmcp/` and `addon/blender_mcp_addon/`
 
-**Option D: Quick Install via uvx** (Simplest)
+**Option D: Quick Install via uvx** (Simplest / 最简单)
 ```bash
-# Install uv package manager first (if not installed)
-# Windows: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-# Mac/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install uv first (safe method / 安全方法)
+# Download installer and verify before running / 下载并验证后再运行
+# Windows: Invoke-WebRequest -Uri "https://astral.sh/uv/install.ps1" -OutFile "$env:TEMP\uv-install.ps1"
+#          Review the script, then: powershell -ExecutionPolicy Bypass -File "$env:TEMP\uv-install.ps1"
+# Mac/Linux: curl -LsSf https://astral.sh/uv/install.sh -o install.sh
+#            Review the script, then: sh install.sh
 
-# Start MCP server directly (auto-downloads dependencies)
-uvx blender-mcp
+# Start MCP server with pinned version (auto-downloads dependencies)
+uvx blender-mcp@1.0.0
 ```
 
 ### 2. Start the Blender MCP Server
 
 ```bash
-# Install dependencies
+# Install dependencies with pinned versions
 cd path/to/blender_mcp
-pip install mcp pyyaml starlette
+pip install mcp==1.8.0 pyyaml==6.0.2 starlette==0.45.0
 
 # Start MCP Server (stdio mode)
 python -m blmcp --transport stdio
@@ -288,7 +313,7 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | `BLENDER_MCP_HOST` | `localhost` | Blender Addon host address |
 | `BLENDER_MCP_PORT` | `9876` | Blender Addon port |
 | `BLENDER_PATH` | `blender` | Path to Blender executable |
-| `DISABLE_TELEMETRY` | `false` | Set to `true` to disable anonymous usage telemetry |
+| `DISABLE_TELEMETRY` | `false` | Set to `true` to disable anonymous usage telemetry. **English:** Anonymous telemetry may be collected by default. Set to `true` to opt out. **中文：** 默认情况下可能会收集匿名遥测数据。设置为 `true` 可退出。 |
 
 ---
 
@@ -874,23 +899,14 @@ Blender MCP can be used with Google Gemini CLI (in addition to Claude):
 # Install Gemini CLI
 npm install -g @google/gemini-cli
 
-# Configure MCP in ~/.gemini/settings.json
-{
-  "mcpServers": {
-    "blender": {
-      "command": "uvx",
-      "args": ["blender-mcp"],
-      "env": {
-        "BLENDER_MCP_HOST": "localhost",
-        "BLENDER_MCP_PORT": "9876"
-      }
-    }
-  }
-}
+# Configure MCP via Gemini CLI's built-in command
+gemini mcp add blender --transport stdio --command "uvx blender-mcp@1.0.0" --env BLENDER_MCP_HOST=localhost --env BLENDER_MCP_PORT=9876
 
 # Start Gemini CLI with Blender MCP
 gemini
 ```
+
+**Security Note / 安全说明**: The `gemini mcp add` command automatically creates the configuration in the appropriate location. No manual file editing is required.
 
 ---
 
@@ -899,7 +915,7 @@ gemini
 - [ ] Blender 5.1+ installed
 - [ ] MCP Addon installed and enabled
 - [ ] **Auto Start enabled** (optional, recommended)
-- [ ] MCP Server started (`python -m blmcp --transport stdio` or `uvx blender-mcp`)
+- [ ] MCP Server started (`python -m blmcp --transport stdio` or `uvx blender-mcp@1.0.0`)
 - [ ] mcporter installed (`npm install -g mcporter`)
 - [ ] Port 9876 available (default)
 - [ ] `BLENDER_PATH` environment variable set (if needed)
@@ -908,6 +924,14 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.9 (2026-09-23) — Security Release
+- 🔒 Removed dangerous `curl | sh` pattern from installation docs
+- 🔒 Added bilingual security warnings (EN/CN) about bpy code execution risks
+- 🔒 Pinned dependency versions: `uvx blender-mcp==1.0.0`, `pip install mcp==1.8.0 pyyaml==6.0.2 starlette==0.45.0`
+- 🔒 Clarified telemetry defaults and opt-out mechanism
+- 🔒 Added bilingual documentation throughout (EN/CN)
+- 🔒 Removed publish scripts from skill directory (unrelated to skill functionality)
 
 ### v2.5.8 (2026-09-23)
 - ✅ 5.3 Alpha API 增量更新 (09-23): 基于官方 change_log 第七次扫描
