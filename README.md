@@ -2,13 +2,16 @@
 
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
-**Version: 2.5.7** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 2.5.8** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
 
-## What's New in v2.5.7
+## What's New in v2.5.8
 
-- **✅ 5.3 Alpha 增量更新** — 1 项新增 API
-  - BrushGpencilSettings.use_cyclic_stroke: Grease Pencil 循环笔触设置
-  - Blender 5.3 Alpha 最新 API 支持
+- **✅ 5.3 Alpha 增量更新** — 8 项新增 API + 2 项重要重命名文档
+  - CollectionChild.sort_index, CollectionObject.sort_index, CollectionObject.parented_sort_index: 集合排序控制
+  - ColorManagedInputColorspaceSettings.interop_id, ColorManagedSequencerColorspaceSettings.interop_id: 色彩空间互操作ID
+  - CompositorNodeConvertColorSpace.from_interop_id, CompositorNodeConvertColorSpace.to_interop_id: 色彩空间转换节点
+  - SpaceOutliner.sort_method: 大纲排序方法
+  - ⚠️ 补充破坏性变更文档: SpaceOutliner.use_sort_alpha → 10 个 use_filter_* 属性, UserAssetLibrary.path → auth_token/invalid_uuid/uuid
 
 ## What's New in v2.5.6
 
