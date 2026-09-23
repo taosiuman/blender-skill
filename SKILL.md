@@ -3,7 +3,7 @@ name: blender-mcp
 description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.7
+version: 2.5.8
 metadata:
   openclaw:
     requires:
@@ -606,6 +606,55 @@ prefs.system.geometry_nodes_stack_limit
 prefs.system.nodes_stack_limit
 ```
 
+#### 🔴 SpaceOutliner 过滤器重命名 (10 项，09-23 补充来源信息！关键！)
+```python
+# ❌ 5.2 及更早
+outliner.use_sort_alpha = True  # 单个属性控制字母排序
+
+# ✅ 5.3 Alpha — 拆分为 10 个独立过滤器属性！
+# 每个对象类型/数据类型都有独立的过滤器控制
+outliner.use_filter_object_materials = True
+outliner.use_filter_object_modifiers = True
+outliner.use_filter_object_constraints = True
+outliner.use_filter_object_shape_keys = True
+outliner.use_filter_object_vertex_groups = True
+outliner.use_filter_object_data = True
+outliner.use_filter_object_animation = True
+outliner.use_filter_bone_collections = True
+outliner.use_filter_pose_bones = True
+outliner.use_filter_grease_pencil_effects = True
+
+# 兼容写法：
+import bpy
+if bpy.app.version >= (5, 3, 0):
+    # 使用新的独立过滤器
+    outliner.use_filter_object_materials = True
+else:
+    # 旧版本使用 use_sort_alpha
+    outliner.use_sort_alpha = True
+```
+
+#### 🔴 UserAssetLibrary 属性重命名 (3 项，09-23 补充来源信息！)
+```python
+# ❌ 5.2 及更早
+library.path = "/path/to/asset"
+
+# ✅ 5.3 Alpha — 拆分为 3 个独立属性
+library.auth_token = "token"  # 认证令牌
+library.invalid_uuid = "uuid"  # 无效 UUID
+library.uuid = "uuid"  # 资产库 UUID
+
+# 兼容写法：
+import bpy
+if bpy.app.version >= (5, 3, 0):
+    # 使用新的独立属性
+    library.auth_token = token
+    library.uuid = uuid
+else:
+    # 旧版本使用 path
+    library.path = path
+```
+
 ### 🟡 5.3 Alpha 高价值新增 (精选)
 
 #### Python API 新增 (09-11 完整扫描 - 4 项新增，累计 50+ 项)
@@ -635,6 +684,7 @@ prefs.system.nodes_stack_limit
 | `CompositorNodeTree.allow_usage_in_scene_compositor_effect` | 允许节点树用于场景合成 | 合成插件 |
 | **ID deep_hash** | `ID.deep_hash` 基于内容的哈希 | 数据块去重/缓存 |
 | **Outliner 11 细粒度过滤器** | `use_filter_object_materials/modifiers/constraints/shape_keys/vertex_groups/data/animation` + `use_filter_bone_collections/pose_bones/grease_pencil_effects` | 大纲视图插件 |
+| **⚠️ Outliner 过滤器重命名** | `use_sort_alpha` → 10 个 `use_filter_*` 属性（破坏性变更！） | 大纲插件迁移 |
 | `UILayout.template_compositor_strip_inputs` | 合成器 Strip 输入模板 | VSE 插件 |
 | `UILayout.template_scene_compositor_effects` | 场景合成效果模板 | 合成 UI 插件 |
 | `RegionView3D.view_camera_roll` | 相机旋转控制 | 相机控制插件 |
@@ -684,6 +734,19 @@ prefs.system.nodes_stack_limit
 | `SpaceProperties.show_properties_compositor` | 显示合成属性 | 属性 UI 插件 |
 | `BrushGpencilSettings.use_cyclic_stroke` | Grease Pencil 循环笔触 | GP 笔刷插件 |
 | `PointCloud.type` | 点云类型属性 | 点云数据处理插件 |
+
+**🆕 最新新增 (09-23 扫描 - 8 项):**
+
+| API | 说明 | 插件开发价值 |
+|-----|------|----------|
+| `CollectionChild.sort_index` | 集合子对象排序索引 | 集合管理插件 |
+| `CollectionObject.sort_index` | 集合对象排序索引 | 集合管理插件 |
+| `CollectionObject.parented_sort_index` | 集合对象父级排序索引 | 集合管理插件 |
+| `ColorManagedInputColorspaceSettings.interop_id` | 输入色彩空间互操作ID | 色彩管理插件 |
+| `ColorManagedSequencerColorspaceSettings.interop_id` | 序列编辑器色彩空间互操作ID | 色彩管理/序列编辑器插件 |
+| `CompositorNodeConvertColorSpace.from_interop_id` | 色彩空间转换节点源互操作ID | 合成节点插件 |
+| `CompositorNodeConvertColorSpace.to_interop_id` | 色彩空间转换节点目标互操作ID | 合成节点插件 |
+| `SpaceOutliner.sort_method` | 大纲排序方法 | 大纲 UI 插件 |
 
 #### Geometry Nodes 新增 (09-06 扫描)
 | 节点/功能 | 说明 | 插件开发价值 |
@@ -845,6 +908,20 @@ gemini
 ---
 
 ## Changelog
+
+### v2.5.8 (2026-09-23)
+- ✅ 5.3 Alpha API 增量更新 (09-23): 基于官方 change_log 第七次扫描
+- ✅ 新增 CollectionChild.sort_index: 集合子对象排序索引
+- ✅ 新增 CollectionObject.sort_index: 集合对象排序索引
+- ✅ 新增 CollectionObject.parented_sort_index: 集合对象父级排序索引
+- ✅ 新增 ColorManagedInputColorspaceSettings.interop_id: 输入色彩空间互操作ID
+- ✅ 新增 ColorManagedSequencerColorspaceSettings.interop_id: 序列编辑器色彩空间互操作ID
+- ✅ 新增 CompositorNodeConvertColorSpace.from_interop_id: 色彩空间转换节点源互操作ID
+- ✅ 新增 CompositorNodeConvertColorSpace.to_interop_id: 色彩空间转换节点目标互操作ID
+- ✅ 新增 SpaceOutliner.sort_method: 大纲排序方法
+- ✅ 补充破坏性变更: SpaceOutliner 的 use_sort_alpha 重命名为 10 个 use_filter_* 属性
+- ✅ 补充破坏性变更: UserAssetLibrary 的 path 重命名为 auth_token/invalid_uuid/uuid
+- ✅ 总计: 8 项新增 API + 2 项重要重命名文档补充 (集合排序/色彩空间互操作/大纲排序)
 
 ### v2.5.7 (2026-09-20)
 - ✅ 5.3 Alpha API 增量更新 (09-20): 基于官方 change_log 第六次扫描
