@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 2.5.9** — Blender 5.1 + 5.2 LTS + 5.3 Alpha compatible
+**Version: 3.1.0** — Blender 5.1 + 5.2 LTS（当前 5.2.2）+ 5.3 dev compatible
 
 ---
 
@@ -77,8 +77,8 @@ mcporter config add blender-mcp --transport stdio --command "python -m blmcp --t
 ### Option B: uvx (with pinned version / 固定版本)
 ```bash
 # Install uv first (safe method / 安全方法)
-# Windows: irm https://astral.sh/uv/install.ps1 | iex
-# Mac/Linux: curl -LsSf https://astral.sh/uv/install.sh -o install.sh && sh install.sh
+# Windows: Download from https://github.com/astral-sh/uv/releases or use winget
+# Mac/Linux: curl -LsSf https://astral.sh/uv/install.sh -o install.sh && chmod +x install.sh && ./install.sh
 
 # Run with pinned version / 使用固定版本运行
 uvx blender-mcp==1.0.0
@@ -127,7 +127,7 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 ## Requirements / 系统要求
 
-- Blender 5.1+ (5.2 LTS + 5.3 Alpha supported)
+- Blender 5.1+ (5.2.x LTS + 5.3 dev supported)
 - Python 3.13+
 - Node.js 18+ (for mcporter)
 
@@ -137,8 +137,8 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 | Version | Status | Support |
 |---------|--------|---------|
-| 5.2 LTS | Stable | Until 2028-07 |
-| 5.3 Alpha | In Development | Alpha until 2026-09-30 |
+| 5.2 LTS (current 5.2.2) | Stable | Until 2028-07 |
+| 5.3 | In Development (docs generated, not released) | 前瞻兼容，最新核验 2026-10-05 |
 | 5.1 | Stable | Legacy |
 | 4.5 LTS | Supported | Until 2027-07 |
 
