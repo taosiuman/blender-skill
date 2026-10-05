@@ -1,19 +1,18 @@
 ---
 name: blender-mcp
-description: "Connect to and control Blender via the official Blender MCP Server. Covers 20+ built-in tools plus arbitrary bpy code execution. Compatible with Blender 5.1, 5.2 LTS, and 5.3 Alpha."
+description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 2.5.9
+version: 3.1.0
 metadata:
-  openclaw:
-    requires:
-      bins: ["blender", "mcporter"]
-    install:
-      - id: mcporter
-        kind: node
-        package: mcporter
-        bins: ["mcporter"]
-        label: "Install mcporter (npm)"
+  octop:
+    emoji: "🔌"
+    label:
+      zh: "Blender MCP 连接"
+      en: "Blender MCP"
+    summary:
+      zh: "官方 Blender MCP Server 接入：20+ 工具、bpy 直执行、无头渲染与排障。"
+      en: "Official Blender MCP server: 20+ tools, live bpy execution, headless mode."
 ---
 
 # Blender MCP Server Connection Skill
@@ -22,7 +21,8 @@ Connect to and control a running Blender instance via the official Blender MCP S
 
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
-**Version support**: Blender 5.1+, 5.2 LTS, and 5.3 Alpha (API compatibility notes included below)
+**Version support**: Blender 5.1+, 5.2.x LTS (current 5.2.2), and 5.3 dev — API compatibility notes included below
+**Last verified**: 2026-10-05（5.3 条目按官方 change_log 复核；完整清单见 `knowledge/blender/api-changes-5.3.md`）
 
 ---
 
@@ -549,12 +549,12 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 
 ---
 
-## Blender 5.3 Alpha Compatibility Notes
+## Blender 5.3 Compatibility Notes (dev — 前瞻)
 
-> Blender 5.3 Alpha 开发中（main 分支）。API 持续变更，生产环境建议使用 5.2 LTS。
-> 📝 最后扫描：2026-09-18 — 新增 Python API 1 项（PointCloud.type），累计 50+ 项
+> 5.3 开发中（main 分支），官方 API 文档已生成于 `https://docs.blender.org/api/5.3/`；生产环境用 **5.2.x LTS（当前 5.2.2）**。
+> 📝 最后核验：2026-10-05（全量比对官方 change_log「5.2 to 5.3」）。完整条目与迁移清单见 `knowledge/blender/api-changes-5.3.md`。
 
-### 🔴 5.3 Alpha Breaking Changes (6 Removed + 5 Renamed + 1 GPU 兼容性)
+### 🔴 5.3 Breaking Changes（8 组，详见知识库）
 
 > 📝 最后扫描：2026-09-07 11:00 — 完整官方 change_log 核实
 
@@ -680,7 +680,40 @@ else:
     library.path = path
 ```
 
-### 🟡 5.3 Alpha 高价值新增 (精选)
+#### 🔴 函数签名变更（2026-10-05 新增发现！易静默出错）
+
+```python
+# ❌ 旧签名（≤5.2）
+bpy.types.ObjectConstraints.new(type)                 # 只传 type
+bpy.types.PoseBoneConstraints.new(type)
+layout.textbox(data, property, initial_visible_lines, placeholder, text_ctxt, translate)
+
+# ✅ 5.3+
+bpy.types.ObjectConstraints.new(type, name)           # 多了一个 name
+bpy.types.PoseBoneConstraints.new(type, name)
+layout.textbox(data, property, text, text_ctxt, translate,
+               initial_visible_lines, placeholder)    # ⚠️ 位置参数被重排！
+
+# 安全做法：全部改用关键字传参
+layout.textbox(data, property, text=text, text_ctxt="", translate=False,
+               initial_visible_lines=3, placeholder="")
+
+# WindowManager.popover / popover_begin__internal：新增 auto_keymap 参数
+bpy.context.window_manager.popover(draw_func, ui_units_x=8, keymap="", from_active_button=False, auto_keymap=True)
+```
+
+**影响**：任何按位置传参调用 `textbox` / `textbox_with_state` / `Constraints.new` 的插件，在 5.3 上会**静默传错值**或抛 `TypeError`。
+
+#### 🟢 2026-10-05 其他新增（精选）
+
+| API | 说明 | 插件价值 |
+|-----|------|----------|
+| `BlendFileColorspace.is_failed_opencolorio_config` / `ocio_config_path` / `ocio_config_source` | OCIO 配置诊断 | 色彩管线插件能定位色彩管理失败原因 |
+| `MaterialGPencilStyle.gradient` | GP 材质渐变 | Grease Pencil 材质插件 |
+| `SpaceOutliner.show_users_column` / `sort_method` | 大纲用户列 / 排序方式 | 大纲 UI 插件 |
+| `UILayout.label_markdown` | UI 渲染 Markdown 文本 | 帮助/文档类面板 |
+
+### 🟡 5.3 High-Value New APIs (精选)
 
 #### Python API 新增 (09-11 完整扫描 - 4 项新增，累计 50+ 项)
 
@@ -790,7 +823,7 @@ else:
 
 ### 完整变更记录
 
-详见技能目录 `docs/blender-knowledge/api-changes-5.2.md`
+详见工作区知识库 `knowledge/blender/api-changes-5.2-lts.md` 与 `knowledge/blender-mcp/research-tracker.md`
 
 ---
 
@@ -924,6 +957,16 @@ gemini
 ---
 
 ## Changelog
+
+### v3.1.0 (2026-10-05) — 5.3 全量核验
+- 🔴 新增破坏性变更：函数签名变更（`ObjectConstraints.new`/`PoseBoneConstraints.new` 增加 `name`；`UILayout.textbox`/`textbox_with_state` **位置参数重排**；`WindowManager.popover*` 新增 `auto_keymap`）
+- 🟢 新增发现：`BlendFileColorspace` OCIO 诊断三项、`MaterialGPencilStyle.gradient`、`SpaceOutliner.show_users_column`/`sort_method`、`UILayout.label_markdown`
+- 📌 完整条目迁移到 `knowledge/blender/api-changes-5.3.md`；本文件保留速览与兼容模板
+
+### v3.0.0 (2026-10-05) — Workspace Rebuild
+- 迁移到 octop 工作区：知识库拆到 `knowledge/blender-mcp/`（research-tracker、auto-publish-workflow）
+- 移除 openclaw 专用安装元数据，改为 octop 技能元数据
+- 研究追踪与发布流程改由 `blender-autolearn` 技能 + 定时任务驱动
 
 ### v2.5.9 (2026-09-23) — Security Release
 - 🔒 Removed dangerous `curl | sh` pattern from installation docs
