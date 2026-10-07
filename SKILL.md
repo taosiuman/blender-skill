@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.1.0
+version: 3.1.1
 metadata:
   octop:
     emoji: "🔌"
@@ -957,6 +957,11 @@ gemini
 ---
 
 ## Changelog
+
+### v3.1.1 (2026-10-08) — 文档一致性修复
+- ✅ README 变更日志补齐 v3.0.0 / v3.1.0 / v3.1.1（修复「版本行 3.1.0、正文停在 v2.5.9」的版本漂移）
+- ✅ 核验日期更新至 2026-10-07（每日快扫 10-06 / 10-07 均无 API 增量）
+- ✅ 无 API 内容变更，纯文档版本
 
 ### v3.1.0 (2026-10-05) — 5.3 全量核验
 - 🔴 新增破坏性变更：函数签名变更（`ObjectConstraints.new`/`PoseBoneConstraints.new` 增加 `name`；`UILayout.textbox`/`textbox_with_state` **位置参数重排**；`WindowManager.popover*` 新增 `auto_keymap`）
