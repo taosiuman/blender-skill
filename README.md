@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.1.0** — Blender 5.1 + 5.2 LTS（当前 5.2.2）+ 5.3 dev compatible
+**Version: 3.1.1** — Blender 5.1 + 5.2 LTS（当前 5.2.2）+ 5.3 dev compatible
 
 ---
 
@@ -28,16 +28,28 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ---
 
-## What's New in v2.5.9 / 更新内容
+## What's New in v3.1.1 / 更新内容
 
-### Security Fixes / 安全修复
-- ✅ Removed dangerous `curl | sh` installation pattern / 移除危险的 `curl | sh` 安装模式
-- ✅ Added explicit security warnings / 添加明确的安全警告
-- ✅ Pinned dependency versions / 固定依赖版本
-- ✅ Clarified telemetry settings / 明确遥测设置
-- ✅ Added bilingual (EN/CN) documentation / 添加双语（中/英）文档
+### Docs Consistency Fix / 文档一致性修复（v3.1.1 · 2026-10-08）
+- ✅ README 变更日志补齐 v3.0.0 / v3.1.0 / v3.1.1 —— 修复「版本行写 3.1.0、正文却停在 v2.5.9」的版本漂移
+- ✅ README changelog caught up with the actual version (no more v2.5.9 drift)
+- ✅ 核验日期更新至 2026-10-07（10-06 / 10-07 每日快扫均无 API 增量）
+- ✅ 无 API 内容变更，纯文档版本 / Docs-only release, no API content change
+
+### Blender 5.3 API Verification / 5.3 API 全量核验（v3.1.0 · 2026-10-05）
+- 🔴 **函数签名变更**（按位置传参会静默出错或 TypeError）：`ObjectConstraints.new` / `PoseBoneConstraints.new` 由 `(type)` → `(type, name)`；`UILayout.textbox` / `textbox_with_state` 位置参数重排；`WindowManager.popover*` 新增 `auto_keymap` → **一律改用关键字传参**
+- 🟢 新增 API：`BlendFileColorspace` OCIO 诊断三项、`MaterialGPencilStyle.gradient`、`SpaceOutliner.show_users_column` / `sort_method`、`UILayout.label_markdown`
+- 📌 完整清单见工作区 `knowledge/blender/api-changes-5.3.md`
+- 📌 版本状态：最新稳定版 **5.2.2 LTS**（2026-09-15）；5.3 官方 API 文档已生成但未发布 → 按前瞻兼容处理
+
+### Workspace Rebuild / 工作区重建（v3.0.0 · 2026-10-05）
+- 🏗 技能元数据 `metadata.openclaw` → `metadata.octop`（现由 octop agent **B 哥** 维护）
+- 🏗 知识库拆分：API 变更明细移入工作区 `knowledge/`，技能保留「速览 + 兼容模板 + 排障」
+- 🏗 修复版本号漂移：`version` / README 版本行 / Changelog 三处强制一致
 
 ### Previous Updates / 之前的更新
+
+**v2.5.9 (2026-09-23):** Security release — removed dangerous `curl | sh` pattern, added explicit bpy-execution warnings, pinned dependency versions, bilingual (EN/CN) docs
 
 **v2.5.8:** 8 new APIs + 2 breaking changes documented
 - CollectionChild.sort_index, ColorManagedInputColorspaceSettings.interop_id, etc.
@@ -138,7 +150,7 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 | Version | Status | Support |
 |---------|--------|---------|
 | 5.2 LTS (current 5.2.2) | Stable | Until 2028-07 |
-| 5.3 | In Development (docs generated, not released) | 前瞻兼容，最新核验 2026-10-05 |
+| 5.3 | In Development (docs generated, not released) | 前瞻兼容，最新核验 2026-10-07 |
 | 5.1 | Stable | Legacy |
 | 4.5 LTS | Supported | Until 2027-07 |
 
@@ -165,6 +177,30 @@ Apache-2.0
 ---
 
 ## Changelog / 变更日志
+
+### v2.5.9 (2026-09-23) — Security Release / 安全发布
+- 🔒 Removed dangerous `curl | sh` pattern from documentation / 从文档中移除危险的 `curl | sh` 模式
+- 🔒 Added explicit security warnings about bpy code execution / 添加关于 bpy 代码执行的明确安全警告
+- 🔒 Pinned dependency versions (uvx, pip) / 固定依赖版本（uvx、pip）
+- 🔒 Clarified telemetry defaults and opt-out / 明确遥测默认值和退出方式
+- 🔒 Added bilingual documentation (EN/CN) / 添加双语文档（中/英）
+- 🔒 Removed release automation scripts (unrelated to skill) / 移除发布自动化脚本（与技能无关）
+
+### v2.5.8 (2026-09-23)
+- ✅ 5.3 Alpha API update: 8 new APIs + 2 breaking changes documented
+
+### v2.5.7 (2026-09-20)
+- ✅ BrushGpencilSettings.use_cyclic_stroke
+
+### v2.5.6 (2026-09-18)
+- ✅ PointCloud.type
+ender/api-changes-5.3.md`
+- 📌 版本状态：最新稳定版 5.2.2 LTS（2026-09-15）；5.3 文档已生成但未发布
+
+### v3.0.0 (2026-10-05) — Workspace Rebuild / 工作区重建
+- 🏗 技能元数据 `metadata.openclaw` → `metadata.octop`
+- 🏗 知识库拆分：API 变更明细移入工作区 `knowledge/`，技能保留速览 + 兼容模板
+- 🏗 修复版本号漂移：`version` / README 版本行 / Changelog 三处强制一致
 
 ### v2.5.9 (2026-09-23) — Security Release / 安全发布
 - 🔒 Removed dangerous `curl | sh` pattern from documentation / 从文档中移除危险的 `curl | sh` 模式
