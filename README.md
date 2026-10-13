@@ -1,12 +1,10 @@
 # Blender MCP Skill
 
-[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/taosiuman/blender-skill?utm_source=readme&utm_medium=badge)
-
 An OpenClaw Agent Skill for connecting to and controlling Blender via the official [Blender MCP Server](https://www.blender.org/lab/mcp-server/).
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.1.1** — Blender 5.1 + 5.2 LTS（当前 5.2.2）+ 5.3 dev compatible
+**Version: 3.3.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 5.2.2）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
 
 ---
 
@@ -30,7 +28,21 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ---
 
-## What's New in v3.1.1 / 更新内容
+## What's New in v3.3.0 / 更新内容
+
+### Official Issue/PR Evidence + Tool-Behavior Troubleshooting / 官方 issue 实证取证 + 工具行为排障（v3.3.0 · 2026-10-13）
+- 🟢 **取证渠道**：`projects.blender.org` 网页长期 403 → 改走 **Gitea REST API**（`/api/v1/repos/lab/blender_mcp/{releases,issues,pulls}`），issue/PR 状态首次拿到**官方实证**
+- 🟢 **add-on 版本**：最新发布仍 **v1.0.3（2026-09-11）**，无 v1.0.4；Open PR = **#48 / #47 / #43**（均未合并）
+- 🟢 排障表新增 7 条可溯源行为坑（`*_for_cli` Windows stdio 挂死 / `execute_blender_code` 新命名空间 / `get_objects_summary` 上下文爆炸 / 缩略图分辨率与临时目录 / `get_python_api_docs` 需重复类名 / macOS `.mcpb` / Windows SAC）
+- ⚠️ 作废不存在的 **#344 / #345 / #348**（官方 API 实测 404）；新增「不得用搜索摘要代替官方源」规则
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.3.0**）
+
+### 5.3 Beta Alignment + Install & Troubleshooting Fixes / 5.3 Beta 口径 + 安装与排障修正（v3.2.0 · 2026-10-11）
+- 🟢 5.3 兼容章节由「dev — 前瞻」改为「**Beta — API 已稳定**」：官方 release notes 首页原文 *"currently in Beta until November 4, 2026"*（RC 节点）→ 发布 **2026-11-10**
+- 🟢 安装步骤改用官方 **add-on v1.0.3** 链接（原写 v1.0.0 已过期），补 **Blender ≥ 5.1** 硬性要求与「拖拽安装要拖两次」
+- 🟢 排障表新增 4 条真实高频坑：Auto Start 只在启动时触发 / 两个 MCP add-on 抢 9876 端口 / Allow Online Access / 拖拽要拖两次
+- 🟢 澄清两个版本号：**add-on v1.0.3**（Blender 侧）≠ **MCP Server 包 1.0.0**（PyPI `blender-mcp`，`uvx` 侧）
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.2.0**）
 
 ### Docs Consistency Fix / 文档一致性修复（v3.1.1 · 2026-10-08）
 - ✅ README 变更日志补齐 v3.0.0 / v3.1.0 / v3.1.1 —— 修复「版本行写 3.1.0、正文却停在 v2.5.9」的版本漂移
@@ -69,14 +81,14 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 - **3 connection modes** — mcporter (recommended), direct TCP socket, background/headless
 - **Geometry Nodes MCP integration** — data relationship queries, scene debugging, node tree inspection
 - **Auto Start** — enable in addon preferences to auto-start MCP Server on Blender launch
-- **Blender 5.1 / 5.2 LTS / 5.3 Alpha compatible** — includes workarounds for all breaking API changes
+- **Blender 5.1 / 5.2 LTS / 5.3 Beta compatible** — includes workarounds for all breaking API changes
 
 - **20 个内置工具** — 场景分析、截图、渲染、导航、文档搜索
 - **任意 bpy 代码执行** — 通过 MCP 通道访问完整的 Python API
 - **3 种连接模式** — mcporter（推荐）、直接 TCP 套接字、后台/无头
 - **几何节点 MCP 集成** — 数据关系查询、场景调试、节点树检查
 - **自动启动** — 在插件首选项中启用，Blender 启动时自动启动 MCP Server
-- **兼容 Blender 5.1 / 5.2 LTS / 5.3 Alpha** — 包含所有破坏性 API 变更的解决方案
+- **兼容 Blender 5.1 / 5.2 LTS / 5.3 Beta** — 包含所有破坏性 API 变更的解决方案
 
 ---
 
@@ -141,7 +153,7 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 ## Requirements / 系统要求
 
-- Blender 5.1+ (5.2.x LTS + 5.3 dev supported)
+- Blender 5.1+ (5.2.x LTS + **5.3 Beta** supported)
 - Python 3.13+
 - Node.js 18+ (for mcporter)
 
@@ -152,9 +164,10 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 | Version | Status | Support |
 |---------|--------|---------|
 | 5.2 LTS (current 5.2.2) | Stable | Until 2028-07 |
-| 5.3 | In Development (docs generated, not released) | 前瞻兼容，最新核验 2026-10-07 |
+| 5.3 | **Beta**（API 自 Beta 起稳定；**RC 2026-11-04** → 发布 **2026-11-10**） | 前瞻兼容（迁移窗口已开），最新核验 **2026-10-11** |
 | 5.1 | Stable | Legacy |
 | 4.5 LTS | Supported | Until 2027-07 |
+| 5.4 | Alpha（main） | **不承诺**：仅 `hasattr` 兜底 |
 
 ---
 
@@ -180,28 +193,34 @@ Apache-2.0
 
 ## Changelog / 变更日志
 
-### v2.5.9 (2026-09-23) — Security Release / 安全发布
-- 🔒 Removed dangerous `curl | sh` pattern from documentation / 从文档中移除危险的 `curl | sh` 模式
-- 🔒 Added explicit security warnings about bpy code execution / 添加关于 bpy 代码执行的明确安全警告
-- 🔒 Pinned dependency versions (uvx, pip) / 固定依赖版本（uvx、pip）
-- 🔒 Clarified telemetry defaults and opt-out / 明确遥测默认值和退出方式
-- 🔒 Added bilingual documentation (EN/CN) / 添加双语文档（中/英）
-- 🔒 Removed release automation scripts (unrelated to skill) / 移除发布自动化脚本（与技能无关）
+> 顺序：最新在上。**版本号三处必须一致**（`SKILL.md` frontmatter / 本文件顶部版本行 / 本 Changelog 首条）。
+> 2026-10-11 修复：本节此前**重复两遍**且缺失 v3.1.0 / v3.1.1 条目（v3.0.0 与 v2.5.x 混排、还残留一行截断文本）。
 
-### v2.5.8 (2026-09-23)
-- ✅ 5.3 Alpha API update: 8 new APIs + 2 breaking changes documented
+### v3.3.0 (2026-10-13) — 官方 issue/PR 实证取证 + 工具行为排障补强
+- 🟢 取证渠道改走 **Gitea REST API**（网页 403 绕过），issue/PR 状态首次有官方实证
+- 🟢 **add-on v1.0.3** 未变（releases API 核实，无 v1.0.4）；Open PR #48 / #47 / #43 未合并
+- 🟢 排障表补 **7 条**官方 issue 可溯源的工具行为坑
+- ⚠️ 作废不存在的 #344 / #345 / #348（实测 404）
 
-### v2.5.7 (2026-09-20)
-- ✅ BrushGpencilSettings.use_cyclic_stroke
+### v3.2.0 (2026-10-11) — 5.3 Beta 口径 + 安装与排障修正
+- 🟢 5.3 兼容章节「dev — 前瞻」→「**Beta — API 已稳定**」；写明 **RC 2026-11-04 → 发布 2026-11-10**（官方 release notes 首页原文）
+- 🟢 安装改用官方 **add-on v1.0.3** 链接（原 v1.0.0 已过期）+ **Blender ≥ 5.1** 要求 + 「拖拽要拖两次」
+- 🟢 排障表补 4 条真实高频坑：Auto Start 仅启动时触发 / 两个 MCP add-on 抢 9876 / Allow Online Access / 拖拽两次
+- 🟢 澄清 **add-on v1.0.3**（Blender 侧）≠ **MCP Server 包 1.0.0**（PyPI，`uvx` 侧）
 
-### v2.5.6 (2026-09-18)
-- ✅ PointCloud.type
-ender/api-changes-5.3.md`
-- 📌 版本状态：最新稳定版 5.2.2 LTS（2026-09-15）；5.3 文档已生成但未发布
+### v3.1.1 (2026-10-08) — Docs Consistency Fix / 文档一致性修复
+- ✅ README 变更日志补齐 v3.0.0 / v3.1.0 / v3.1.1（修复「版本行 3.1.0、正文停在 v2.5.9」的版本漂移）
+- ✅ 核验日期更新至 2026-10-07（每日快扫 10-06 / 10-07 均无 API 增量）
+- ✅ 无 API 内容变更，纯文档版本
+
+### v3.1.0 (2026-10-05) — 5.3 全量核验
+- 🔴 新增破坏性变更：函数签名变更（`ObjectConstraints.new` / `PoseBoneConstraints.new` 增加 `name`；`UILayout.textbox` / `textbox_with_state` **位置参数重排**；`WindowManager.popover*` 新增 `auto_keymap`）
+- 🟢 新增发现：`BlendFileColorspace` OCIO 诊断三项、`MaterialGPencilStyle.gradient`、`SpaceOutliner.show_users_column` / `sort_method`、`UILayout.label_markdown`
+- 📌 完整条目迁移到 `knowledge/blender/api-changes-5.3.md`；技能保留速览与兼容模板
 
 ### v3.0.0 (2026-10-05) — Workspace Rebuild / 工作区重建
-- 🏗 技能元数据 `metadata.openclaw` → `metadata.octop`
-- 🏗 知识库拆分：API 变更明细移入工作区 `knowledge/`，技能保留速览 + 兼容模板
+- 🏗 技能元数据 `metadata.openclaw` → `metadata.octop`（改由 octop agent **B 哥** 维护）
+- 🏗 知识库拆分：API 变更明细移入工作区 `knowledge/`，技能保留速览 + 兼容模板 + 排障
 - 🏗 修复版本号漂移：`version` / README 版本行 / Changelog 三处强制一致
 
 ### v2.5.9 (2026-09-23) — Security Release / 安全发布
@@ -213,7 +232,7 @@ ender/api-changes-5.3.md`
 - 🔒 Removed release automation scripts (unrelated to skill) / 移除发布自动化脚本（与技能无关）
 
 ### v2.5.8 (2026-09-23)
-- ✅ 5.3 Alpha API update: 8 new APIs + 2 breaking changes documented
+- ✅ 5.3 API update: 8 new APIs + 2 breaking changes documented
 
 ### v2.5.7 (2026-09-20)
 - ✅ BrushGpencilSettings.use_cyclic_stroke
