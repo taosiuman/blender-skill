@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.1.1
+version: 3.3.0
 metadata:
   octop:
     emoji: "🔌"
@@ -21,8 +21,8 @@ Connect to and control a running Blender instance via the official Blender MCP S
 
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
-**Version support**: Blender 5.1+, 5.2.x LTS (current 5.2.2), and 5.3 dev — API compatibility notes included below
-**Last verified**: 2026-10-05（5.3 条目按官方 change_log 复核；完整清单见 `knowledge/blender/api-changes-5.3.md`）
+**Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current 5.2.2), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
+**Last verified**: **2026-10-13**（每日快扫：官方 issue/PR **首次实证取证**（Gitea REST API 绕开 HTML 403）；add-on 仍 **v1.0.3**（最新发布 2026-09-11，无 v1.0.4）；排障表补 7 条工具行为坑；完整清单见 `knowledge/blender-mcp/research-tracker.md`）
 
 ---
 
@@ -65,15 +65,19 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ### 1. Install the Blender Addon
 
-**Option A: From ZIP**
-1. Download addon ZIP: `https://projects.blender.org/lab/blender_mcp/releases/download/v1.0.0/mcp-1.0.0.zip`
+> **Requirements (official)**: **Blender 5.1 or newer**（官方 Lab 页原文）；官方 add-on 当前版本 **v1.0.3**（2026-10-11 复核，与 10-09 / 10-10 一致）。
+
+**Option A: From ZIP** (official release / 官方发布)
+1. Download addon ZIP: `https://projects.blender.org/lab/blender_mcp/releases/download/v1.0.3/mcp-1.0.3.zip`
+   （或从官方落地页 `https://www.blender.org/lab/mcp-server/` 取最新链接）
 2. Blender → Edit → Preferences → Add-ons → Install from Disk
-3. Enable the "Blender MCP" addon
+3. Enable the MCP addon (listed as **MCP**, maintained by Blender Lab)
 4. Confirm Host/Port in addon settings (default `localhost:9876`)
-5. **Optional: Enable "Auto Start"** to start the server automatically when Blender opens
+5. **Optional: Enable "Auto Start"** — ⚠️ 只在 **Blender 启动时**触发；刚装完状态仍是 "Server is stopped"，需手动点一次 **Start MCP Bridge Server**
 
 **Option B: Drag & Drop**
-- Drag the ZIP file into the Blender window (twice: first to add the Blender Lab repository, second to install the addon)
+- Drag the install link/ZIP into the Blender window **twice**: first drop adds the **Blender Lab repository**, second installs the addon
+- 好处：之后能收到 add-on 更新通知
 
 **Option C: From Source**
 - Source code locations: `mcp/blmcp/` and `addon/blender_mcp_addon/`
@@ -90,6 +94,11 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 # Start MCP server with pinned version (auto-downloads dependencies)
 uvx blender-mcp@1.0.0
 ```
+
+> ⚠️ **别把两个版本号搞混**（真实高频困惑）：
+> - **Blender add-on**（官方 Lab 发布，装在 Blender 里）：当前 **v1.0.3** —— 见上面 Option A 链接
+> - **MCP Server 包**（`uvx`/`pip` 装的 Python 进程）：本文档 pin 在 **1.0.0**（PyPI 包 `blender-mcp`）
+> 两者版本号各自独立；排障时先确认「哪一半」出问题。
 
 ### 2. Start the Blender MCP Server
 
@@ -339,10 +348,34 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `ConnectionRefusedError` | Blender not running or Addon not started | Start Blender, enable MCP Addon, click "Start Server" |
+| `ConnectionRefusedError`（Blender 开着也没反应） | **Auto Start 只在 Blender 启动时触发** —— 刚装完 add-on 时状态仍是 "Server is stopped" | 手动点一次 **Start MCP Bridge Server**（之后 Auto Start 才会生效） |
+| 端口被占 / 连上却不是自己的 Blender | **两个 MCP add-on 不能同时启用**（官方 Lab add-on 与社区 `blender-mcp` 都监听 **9876**） | 只留一个：Preferences → Add-ons 里禁用另一个；或改端口并同步 `BLENDER_MCP_PORT` |
+| `Online access must be enabled in the system preferences` | Blender 的全局联网开关（官方 add-on 遵守该开关） | Preferences → **System → Network → Allow Online Access** |
+| 装完在 Add-ons 里找不到 | 拖拽安装**需要拖两次**（第一次只加了 Blender Lab 仓库） | 再拖一次；或改用 Install from Disk |
 | `ConnectionError: Empty response` | Network timeout or Addon crashed | Check Blender console output, verify port |
 | `result is not JSON-serializable` | Returned a Blender object | Use `strict_json=False` or manually convert to dict |
 | `Blender executable not found` | Blender command not found | Set `BLENDER_PATH` environment variable |
 | `Deferred responses not supported` | Background mode doesn't support deferred responses | Use synchronous code or switch to GUI mode |
+| **`*_for_cli` 工具在 Windows + stdio 下 120s 超时挂死** | `run_blender_cli()` 调 `subprocess.run()` 未传 `stdin` → 子进程继承 MCP 的 stdio 管道，Windows 上死锁（官方 issue **#58** / **#60**，修复 PR **#48 未合并**） | 仍有问题：给该处补 `stdin=subprocess.DEVNULL`（本地打补丁），或改用非 `*_for_cli` 的交互工具 |
+| `NameError: name 'bpy' is not defined` / 上次的变量不见了 | **`execute_blender_code` 每次调用都是全新 Python 命名空间**（`bpy` 不预导入、局部变量不跨调用保留；官方 issue **#55**/#53） | 每次调用**都写 `import bpy`**；需要跨调用状态就显式写回 `bpy` 数据或文件 |
+| `get_objects_summary` 把上下文撑爆 | 输出随场景复杂度递归增长（1670 对象 ≈ 904 KB ≈ 15.5k+ tokens；官方 issue **#54**） | 大场景先用更轻的检查方式；必要时按集合分批查询 |
+| 缩略图 / 渲染产物**不是**想要的分辨率或不在指定路径 | `render_thumbnail_to_path` 交互模式会用原分辨率渲染（issue **#46**/**#61**）；两个 `*_to_path` 工具**只取文件名的 basename**，实际写进 MCP 临时目录（issue #53） | 用工具返回的 `filepath` 读产物；要确定的分辨率就自己在 `execute_blender_code` 里设渲染参数并阻塞式渲染 |
+| `get_python_api_docs` 查成员文档查不到（`bpy.types.Object.location`） | 成员解析需要**重复类名**（官方 issue **#62**，2026-10-10） | 用 `bpy.types.Object.Object.location`；`bpy.ops.*` 和整类查询正常 |
+| macOS 上 `.mcpb` 装不上（"Operation not permitted"） | Claude Desktop 的 `.mcpb` 安装助手与 uv cache 权限冲突（官方 issue **#57**） | macOS 走 **add-on + `uvx`** 路线，别依赖 `.mcpb` |
+| Windows 上 `blender-mcp.exe` 被拦（`os error 4551`） | **Smart App Control / VerifiedAndReputable 策略**拦截无签名启动器（官方 issue **#56**） | 用官方 add-on 通道；或临时关闭 SAC（企业环境另说） |
+
+> **查官方动态的正确姿势（2026-10-13 起，绕开 HTML 403）**：`projects.blender.org` 的**网页**长期 403，但**同一站点的 Gitea REST API 可用**：
+>
+> ```bash
+> # 仓库 / 发布 / issue / PR（实测 2026-10-13 全部 200）
+> https://projects.blender.org/api/v1/repos/lab/blender_mcp
+> https://projects.blender.org/api/v1/repos/lab/blender_mcp/releases?limit=10
+> https://projects.blender.org/api/v1/repos/lab/blender_mcp/issues?state=open&sort=recentupdate&limit=20
+> https://projects.blender.org/api/v1/repos/lab/blender_mcp/pulls?state=open&limit=10
+> ```
+>
+> 官方落地页 `https://www.blender.org/lab/mcp-server/` 一般可访问（给 add-on 版本号与安装要求）。
+> ⚠️ **不要**用搜索摘要代替官方源：本工作区曾据此写下**不存在的 issue 号**（#344/#345/#348 实测 404），已作废。
 
 ---
 
@@ -549,10 +582,12 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 
 ---
 
-## Blender 5.3 Compatibility Notes (dev — 前瞻)
+## Blender 5.3 Compatibility Notes (Beta — API 已稳定)
 
-> 5.3 开发中（main 分支），官方 API 文档已生成于 `https://docs.blender.org/api/5.3/`；生产环境用 **5.2.x LTS（当前 5.2.2）**。
-> 📝 最后核验：2026-10-05（全量比对官方 change_log「5.2 to 5.3」）。完整条目与迁移清单见 `knowledge/blender/api-changes-5.3.md`。
+> **5.3 = Beta**（分支 `blender-v5.3-release`）。官方 release notes 首页原文：**"Blender 5.3 is currently in Beta until November 4, 2026"**（= RC 节点）→ **正式发布 2026-11-10**。
+> 官方 release cycle 明确「**Beta 期间 Python API 保持稳定，add-ons 有时间在发布前完成适配**」→ **5.3 兼容代码现在就可以定版**。
+> 生产基准仍是 **5.2.x LTS（当前 5.2.2）**；5.4 处于 Alpha，**不承诺、不跟**。
+> 📝 最后核验：**2026-10-11**（`/api/5.3/` 章节 131 条 + 5.3 release notes 首页/python_api 全页；完整条目与迁移清单见 `knowledge/blender/api-changes-5.3.md`）
 
 ### 🔴 5.3 Breaking Changes（8 组，详见知识库）
 
@@ -572,7 +607,7 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 # ❌ 5.2 及更早
 modifier.panels  # 访问 Geo Nodes 修饰器的面板属性
 
-# ✅ 5.3 Alpha — 已移除！
+# ✅ 5.3+ — 已移除！
 # Geo Nodes 修饰器不再有 panels 属性
 # 兼容写法：
 import bpy
@@ -585,7 +620,7 @@ else:
 
 #### 🔴 Theme API 移除 (09-07 新发现)
 ```python
-# ❌ 以下主题属性在 5.3 Alpha 中已移除：
+# ❌ 以下主题属性在 5.3 中已移除：
 # ThemeFileBrowser.selected_file
 # ThemeSpaceGeneric.header_text / header_text_hi / title
 # ThemeSpaceGradient.header_text / header_text_hi / title
@@ -599,7 +634,7 @@ else:
 # ❌ 5.2 及更早
 brush.use_inverse_smooth_pressure = True
 
-# ✅ 5.3 Alpha（09-07 官方确认的新名称）
+# ✅ 5.3+（09-07 官方确认的新名称）
 brush.use_smooth_pressure = True        # ← use_inverse_smooth_pressure 重命名而来
 brush.use_unified_input_samples = True  # ← 新增统一输入属性
 brush.use_unified_strength = True       # ← 新增统一强度属性
@@ -618,7 +653,7 @@ else:
 # ❌ 5.2
 prefs.experimental.use_sculpt_texture_paint
 
-# ✅ 5.3 Alpha
+# ✅ 5.3+
 prefs.experimental.use_3d_texture_paint
 ```
 
@@ -627,7 +662,7 @@ prefs.experimental.use_3d_texture_paint
 # ❌ 5.2
 prefs.system.geometry_nodes_stack_limit
 
-# ✅ 5.3 Alpha
+# ✅ 5.3+
 prefs.system.nodes_stack_limit
 ```
 
@@ -636,7 +671,7 @@ prefs.system.nodes_stack_limit
 # ❌ 5.2 及更早
 outliner.use_sort_alpha = True  # 单个属性控制字母排序
 
-# ✅ 5.3 Alpha — 拆分为 10 个独立过滤器属性！
+# ✅ 5.3+ — 拆分为 10 个独立过滤器属性！
 # 每个对象类型/数据类型都有独立的过滤器控制
 outliner.use_filter_object_materials = True
 outliner.use_filter_object_modifiers = True
@@ -664,7 +699,7 @@ else:
 # ❌ 5.2 及更早
 library.path = "/path/to/asset"
 
-# ✅ 5.3 Alpha — 拆分为 3 个独立属性
+# ✅ 5.3+ — 拆分为 3 个独立属性
 library.auth_token = "token"  # 认证令牌
 library.invalid_uuid = "uuid"  # 无效 UUID
 library.uuid = "uuid"  # 资产库 UUID
@@ -957,6 +992,21 @@ gemini
 ---
 
 ## Changelog
+
+### v3.3.0 (2026-10-13) — 官方 issue/PR 实证取证 + 工具行为排障补强（每日快扫）
+- 🟢 **取证渠道修复**：`projects.blender.org` 的 HTML 页面长期 403，改走 **Gitea REST API**（`/api/v1/repos/lab/blender_mcp/{releases,issues,pulls}`）→ **issue/PR 状态首次拿到官方实证**（此前 10 天只能写"未能核查"）
+- 🟢 **add-on 版本核实**：最新发布仍是 **v1.0.3（2026-09-11）**，无 v1.0.4（官方 releases API + 落地页双向印证）；Open PR = **#48 / #47 / #43**（均未合并）
+- 🟢 排障表新增 **7 条官方 issue 可溯源的工具行为坑**：`*_for_cli` Windows stdio 挂死（#58/#60，PR #48）｜`execute_blender_code` 每次新命名空间（#55）｜`get_objects_summary` 上下文爆炸（#54）｜缩略图分辨率与临时目录语义（#46/#61/#53）｜`get_python_api_docs` 需重复类名（#62）｜macOS `.mcpb` 安装失败（#57）｜Windows SAC 拦截（#56）
+- ⚠️ **更正**：作废追踪表中不存在的 **#344 / #345 / #348**（官方 API 实测 404）；新增"不得用搜索摘要代替官方源"的取证规则
+- 📌 API 侧同步：change_log 本轮 8 条新条目中 7 条实际 5.3 生效（项目系统 + UILayout 模板，见 `api-changes-5.3.md` §7）、1 条 5.4 独有（`Mesh.use_radial_symmetry`，见 §3.6）—— **均不触及 MCP 执行路径**，MCP 侧无兼容性改动
+- ✅ 三处版本号一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.3.0**；**双平台发布仍待用户确认**（v3.2.0 未发布 → 本次发布一并覆盖两版变更）
+
+### v3.2.0 (2026-10-11) — 5.3 Beta 口径 + 官方安装链接 + 排障补强（周度整合）
+- 🟢 5.3 兼容章节标题由「dev — 前瞻」改为「**Beta — API 已稳定**」，并写明 **RC 2026-11-04 → 发布 2026-11-10**（官方 release notes 首页原文）
+- 🟢 安装步骤改用官方 **add-on v1.0.3** 链接（原写 v1.0.0 已过期），补 **Blender ≥ 5.1** 硬性要求与「拖拽要拖两次」说明
+- 🟢 排障表新增 4 条高频真实坑：**Auto Start 只在启动时触发** / **两个 MCP add-on 抢 9876 端口** / **Allow Online Access** / **拖拽安装要拖两次**
+- 📌 同步两条 5.3 生效的 API 变更口径（`use_collection_importer` 移除、资产库进度回调 3 参数）—— 官方已于 2026-10-11 把它们补登进 `/api/5.3/` 章节
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog 均为 **3.2.0**；**双平台发布待用户确认**
 
 ### v3.1.1 (2026-10-08) — 文档一致性修复
 - ✅ README 变更日志补齐 v3.0.0 / v3.1.0 / v3.1.1（修复「版本行 3.1.0、正文停在 v2.5.9」的版本漂移）
