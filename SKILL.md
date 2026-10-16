@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.3.0
+version: 3.4.0
 metadata:
   octop:
     emoji: "🔌"
@@ -22,7 +22,7 @@ Connect to and control a running Blender instance via the official Blender MCP S
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
 **Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current 5.2.2), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
-**Last verified**: **2026-10-13**（每日快扫：官方 issue/PR **首次实证取证**（Gitea REST API 绕开 HTML 403）；add-on 仍 **v1.0.3**（最新发布 2026-09-11，无 v1.0.4）；排障表补 7 条工具行为坑；完整清单见 `knowledge/blender-mcp/research-tracker.md`）
+**Last verified**: **2026-10-16**（每日快扫：add-on 仍 **v1.0.3**（最新发布 2026-09-11，无 v1.0.4），落地页可比基线连续 8 次一致；MCP 仓库 open issues **18 → 21**，新增 **#63**（Windows `SO_REUSEADDR` 让第二个 Blender 静默绑定已占用端口 → 客户端始终连第一个实例）与 **#64**（`result` 必须为 dict，官方 server instructions 说可返回 list 属文案误导）→ 排障表补 2 条；完整清单见 `knowledge/blender-mcp/research-tracker.md`）
 
 ---
 
@@ -363,6 +363,8 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | `get_python_api_docs` 查成员文档查不到（`bpy.types.Object.location`） | 成员解析需要**重复类名**（官方 issue **#62**，2026-10-10） | 用 `bpy.types.Object.Object.location`；`bpy.ops.*` 和整类查询正常 |
 | macOS 上 `.mcpb` 装不上（"Operation not permitted"） | Claude Desktop 的 `.mcpb` 安装助手与 uv cache 权限冲突（官方 issue **#57**） | macOS 走 **add-on + `uvx`** 路线，别依赖 `.mcpb` |
 | Windows 上 `blender-mcp.exe` 被拦（`os error 4551`） | **Smart App Control / VerifiedAndReputable 策略**拦截无签名启动器（官方 issue **#56**） | 用官方 add-on 通道；或临时关闭 SAC（企业环境另说） |
+| **Windows 多开 Blender：服务显示"已启动"、客户端却连到别的实例**（改了没反应 / 操作落到另一个窗口） | `mcp_to_blender_server.py` 在 `bind()` **之前**设了 `SO_REUSEADDR`；Windows 语义允许**第二个 socket 绑定已监听端口** → 第二个实例不报错，客户端始终连第一个（官方 issue **#63**，Win11 + Blender 5.2.2 LTS + blender_mcp 1.0.2 实测 20/20 复现；建议官方改用 `SO_EXCLUSIVEADDRUSE`） | **只开一个 Blender 实例**再启服务；或先关掉旧实例再 Start；排查时看端口占用（`netstat -ano \| findstr 9876`）而非只看按钮状态 |
+| `The result variable must be a dict, not list. Wrap your return value: result = {"key": value}` | add-on **只接受 dict**；官方 server instructions / `prompts.yml` L48 声称可返回 "dicts, lists" 属**文案与实现不一致**（官方 issue **#64**） | 返回值**一律包成 dict**：`result = {"items": [...]}`；别按 instructions 返回裸 list |
 
 > **查官方动态的正确姿势（2026-10-13 起，绕开 HTML 403）**：`projects.blender.org` 的**网页**长期 403，但**同一站点的 Gitea REST API 可用**：
 >
@@ -992,6 +994,13 @@ gemini
 ---
 
 ## Changelog
+
+### v3.4.0 (2026-10-16) — 2 条新官方 issue 工具行为坑（每日快扫）
+- 🟢 排障表新增 **2 条官方 issue 可溯源的工具行为坑**：
+  - **issue #63**：Windows 上 `SO_REUSEADDR` 让**第二个 Blender 实例静默绑定已占用端口** → 服务按钮显示"已启动"但客户端始终连第一个实例（表现：操作落到别的窗口 / 改了没反应）。创建者实测 **20/20 复现**（Win11 + Blender 5.2.2 LTS + blender_mcp 1.0.2），建议官方改用 `SO_EXCLUSIVEADDRUSE` → 技能给处置：**只开一个实例** / 先关旧实例 / `netstat -ano | findstr 9876` 查占用
+  - **issue #64**：`execute_blender_code` 的 `result` **必须为 dict**；官方 `prompts.yml` L48 声称可返回 "dicts, lists" 属**文案与实现不一致**（报错原文 `The result variable must be a dict, not list. Wrap your return value: result = {"key": value}`）→ 技能给处置：**一律包成 dict**
+- 📌 MCP 仓库快照：最新发布仍 **v1.0.3（2026-09-11，无 v1.0.4）**；落地页 add-on 链接**可比基线连续 8 次一致**；Open issues **18 → 21**；Open PR **#48 / #47 / #43 仍全部未合并**
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.4.0**；**双平台发布待用户确认**（远端已发布基线仍是 v3.3.0）
 
 ### v3.3.0 (2026-10-13) — 官方 issue/PR 实证取证 + 工具行为排障补强（每日快扫）
 - 🟢 **取证渠道修复**：`projects.blender.org` 的 HTML 页面长期 403，改走 **Gitea REST API**（`/api/v1/repos/lab/blender_mcp/{releases,issues,pulls}`）→ **issue/PR 状态首次拿到官方实证**（此前 10 天只能写"未能核查"）
