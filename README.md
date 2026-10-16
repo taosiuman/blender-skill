@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.3.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 5.2.2）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+**Version: 3.4.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 5.2.2，5.2.3-candidate 构建已出现）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
 
 ---
 
@@ -28,7 +28,13 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ---
 
-## What's New in v3.3.0 / 更新内容
+## What's New in v3.4.0 / 更新内容
+
+### Two New Official Tool-Behavior Gotchas / 两条新官方工具行为坑（v3.4.0 · 2026-10-16）
+- 🟢 **issue #63（Windows 多开陷阱）**：`mcp_to_blender_server.py` 在 `bind()` 前设 `SO_REUSEADDR`，Windows 语义允许**第二个 Blender 静默绑定已占用端口** → 服务按钮显示 "Server is started"，但客户端始终连**第一个**实例（现象：改了没反应 / 操作落到另一个窗口）。创建者 Win11 + Blender 5.2.2 LTS + blender_mcp 1.0.2 实测 **20/20 复现** → 技能处置：只开一个实例 / 先关旧实例再 Start / `netstat -ano | findstr 9876` 查占用
+- 🟢 **issue #64（返回值类型）**：`execute_blender_code` 的 `result` **必须为 dict**，官方 `prompts.yml` L48 说可返回 "dicts, lists" 是**文案与实现不一致**（报错：`The result variable must be a dict, not list. Wrap your return value: result = {"key": value}`）→ 技能处置：返回值**一律包成 dict**
+- 📌 MCP 仓库快照：最新发布仍 **v1.0.3**（无 v1.0.4）｜落地页链接**连续 8 次一致**｜Open issues **18 → 21**｜Open PR **#48 / #47 / #43 仍未合并**
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.4.0**）；**双平台发布待用户确认**（远端已发布基线仍是 v3.3.0）
 
 ### Official Issue/PR Evidence + Tool-Behavior Troubleshooting / 官方 issue 实证取证 + 工具行为排障（v3.3.0 · 2026-10-13）
 - 🟢 **取证渠道**：`projects.blender.org` 网页长期 403 → 改走 **Gitea REST API**（`/api/v1/repos/lab/blender_mcp/{releases,issues,pulls}`），issue/PR 状态首次拿到**官方实证**
@@ -195,6 +201,10 @@ Apache-2.0
 
 > 顺序：最新在上。**版本号三处必须一致**（`SKILL.md` frontmatter / 本文件顶部版本行 / 本 Changelog 首条）。
 > 2026-10-11 修复：本节此前**重复两遍**且缺失 v3.1.0 / v3.1.1 条目（v3.0.0 与 v2.5.x 混排、还残留一行截断文本）。
+
+### v3.4.0 (2026-10-16) — 2 条新官方 issue 工具行为坑
+- 🟢 排障表补 **2 条**官方 issue：**#63**（Windows `SO_REUSEADDR` → 第二个 Blender 静默占用端口，客户端始终连第一个实例；20/20 复现）｜**#64**（`result` 必须为 dict，官方 instructions 说可返回 list 属文案误导）
+- 📌 **add-on v1.0.3** 未变（无 v1.0.4）；落地页链接连续 8 次一致；Open issues **18 → 21**；Open PR #48 / #47 / #43 仍未合并
 
 ### v3.3.0 (2026-10-13) — 官方 issue/PR 实证取证 + 工具行为排障补强
 - 🟢 取证渠道改走 **Gitea REST API**（网页 403 绕过），issue/PR 状态首次有官方实证
