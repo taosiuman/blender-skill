@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.5.0
+version: 3.5.1
 metadata:
   octop:
     emoji: "🔌"
@@ -21,7 +21,7 @@ Connect to and control a running Blender instance via the official Blender MCP S
 
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
-**Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current 5.2.2), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
+**Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current **5.2.3**, 2026-10-22 发布), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
 **Last verified**: **2026-10-20**（每日快扫：add-on 仍 **v1.0.3**（2026-09-11，无 v1.0.4），落地页可比基线连续 11 次一致；MCP open issues **21 → 22**，新增 **#65**（Windows SAC 把**官方 MCPB 扩展自带**的 `blender-mcp.exe` 也拦了 → 旧建议「改用官方通道」被证伪）→ 排障表 SAC 条目重写；完整清单见 `knowledge/blender-mcp/research-tracker.md`）
 
 ---
@@ -359,7 +359,7 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | **`*_for_cli` 工具在 Windows + stdio 下 120s 超时挂死** | `run_blender_cli()` 调 `subprocess.run()` 未传 `stdin` → 子进程继承 MCP 的 stdio 管道，Windows 上死锁（官方 issue **#58** / **#60**，修复 PR **#48 未合并**） | 仍有问题：给该处补 `stdin=subprocess.DEVNULL`（本地打补丁），或改用非 `*_for_cli` 的交互工具 |
 | `NameError: name 'bpy' is not defined` / 上次的变量不见了 | **`execute_blender_code` 每次调用都是全新 Python 命名空间**（`bpy` 不预导入、局部变量不跨调用保留；官方 issue **#55**/#53） | 每次调用**都写 `import bpy`**；需要跨调用状态就显式写回 `bpy` 数据或文件 |
 | `get_objects_summary` 把上下文撑爆 | 输出随场景复杂度递归增长（1670 对象 ≈ 904 KB ≈ 15.5k+ tokens；官方 issue **#54**） | 大场景先用更轻的检查方式；必要时按集合分批查询 |
-| 缩略图 / 渲染产物**不是**想要的分辨率或不在指定路径 | `render_thumbnail_to_path` 交互模式会用原分辨率渲染（issue **#46**/**#61**）；两个 `*_to_path` 工具**只取文件名的 basename**，实际写进 MCP 临时目录（issue #53） | 用工具返回的 `filepath` 读产物；要确定的分辨率就自己在 `execute_blender_code` 里设渲染参数并阻塞式渲染 |
+| 缩略图 / 渲染产物**不是**想要的分辨率或不在指定路径 | `render_thumbnail_to_path` 交互模式会用原分辨率渲染（issue **#46**/**#61**）。**根因（官方 PR #66，2026-10-22，未合并）**：上下文管理器在 `INVOKE_DEFAULT` job **返回时就恢复了设置**，而 job 真正执行在后面 → job 读到的是用户原设置；另 EEVEE 引擎标识未匹配 `BLENDER_EEVEE`。作者实测 main 1920×1080 / 1.6 MB / ~9 s → 打补丁 320×180 / 50 KB / 0.8~1.3 s。两个 `*_to_path` 工具**只取文件名的 basename**，实际写进 MCP 临时目录（issue #53） | 用工具返回的 `filepath` 读产物；要确定的分辨率就自己在 `execute_blender_code` 里设渲染参数并阻塞式渲染（**PR #66 合并前这是唯一可靠做法**） |
 | `get_python_api_docs` 查成员文档查不到（`bpy.types.Object.location`） | 成员解析需要**重复类名**（官方 issue **#62**，2026-10-10） | 用 `bpy.types.Object.Object.location`；`bpy.ops.*` 和整类查询正常 |
 | macOS 上 `.mcpb` 装不上（"Operation not permitted"） | Claude Desktop 的 `.mcpb` 安装助手与 uv cache 权限冲突（官方 issue **#57**） | macOS 走 **add-on + `uvx`** 路线，别依赖 `.mcpb` |
 | Windows 上 `blender-mcp.exe` 被拦（`os error 4551` / Claude Desktop "MCP Blender: Server disconnected"） | **Smart App Control（SAC）enforcement 模式只放行「被 Microsoft 应用智能服务识别」或「受信任 CA 签名」的二进制**（Microsoft Learn 原文）→ **未签名的 `blender-mcp.exe` 必被拦**。⚠️ **2026-10-19 起确认：换成官方 MCPB 扩展也躲不过** —— 扩展自带 `.venv\Scripts\blender-mcp.exe` 同样 `NotSigned`、同样触发 Code Integrity event 3077（官方 issue **#56** 走 uv 安装 / **#65** 走官方扩展，两者同因） | **旧建议「改用官方 add-on / MCPB 通道」已被 #65 证伪，不要再用**。可行路径：① 先 `Get-AuthenticodeSignature .venv\Scripts\blender-mcp.exe` 确认是否 `NotSigned`（SAC 场景 100% 是）；② 让用户在 **SAC 状态**（设置 → 隐私和安全性 → Windows 安全中心 → 应用和浏览器控制）上做决定 —— 关闭 SAC 属高风险改动、企业域策略下不要动，**先确认再谈**；③ ⚠️ 待核验：SAC 是否支持「为单个应用加白名单」（据本机观察没有该入口，需查 Microsoft 文档确认后写死） |
@@ -588,7 +588,7 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 
 > **5.3 = Beta**（分支 `blender-v5.3-release`）。官方 release notes 首页原文：**"Blender 5.3 is currently in Beta until November 4, 2026"**（= RC 节点）→ **正式发布 2026-11-10**。
 > 官方 release cycle 明确「**Beta 期间 Python API 保持稳定，add-ons 有时间在发布前完成适配**」→ **5.3 兼容代码现在就可以定版**。
-> 生产基准仍是 **5.2.x LTS（当前 5.2.2）**；5.4 处于 Alpha，**不承诺、不跟**。
+> 生产基准仍是 **5.2.x LTS（当前 5.2.3，2026-10-22 发布）**；5.4 处于 Alpha，**不承诺、不跟**。
 > 📝 最后核验：**2026-10-11**（`/api/5.3/` 章节 131 条 + 5.3 release notes 首页/python_api 全页；完整条目与迁移清单见 `knowledge/blender/api-changes-5.3.md`）
 
 ### 🔴 5.3 Breaking Changes（8 组，详见知识库）
@@ -995,13 +995,22 @@ gemini
 
 ## Changelog
 
+### v3.5.1 (2026-10-23) — 版本基准更正（5.2.3 LTS 已发布）+ 缩略图坑补根因
+
+- 🔴 **事实更正**：`README.md` 版本行原写「`5.2.3` 仍是 RC 构建、已换 hash `c361aec8a863` 但**未发布**」→ **已过期**。实际 **5.2.3 与 4.5.15 均于 2026-10-22 正式发布**（三件套全绿：镜像包 `blender-5.2.3-*` / `.msi` HTTP 200 / Gitea tag `v5.2.3`；官网首页 "LATEST RELEASE … Released October 22, 2026"）。技能内版本口径统一改为 **5.2.x LTS（当前 5.2.3）**（共 3 处：`SKILL.md` 版本支持行 + 5.4 分段说明 + README 版本行/兼容表）
+- 🟢 **缩略图坑补根因**（排障表）：`render_thumbnail_to_path` 交互模式全分辨率**不是参数没传**，而是**上下文管理器在 `INVOKE_DEFAULT` job 返回时就恢复设置**，job 实际执行时读到的是用户原设置；另 EEVEE 引擎标识需匹配 `BLENDER_EEVEE`。来源：**官方 PR #66**（2026-10-22，Victor-Solano，`mergeable: true`，+20/-8，**未合并**），作者实测 1920×1080/1.6MB/~9s → 320×180/50KB/0.8~1.3s（Win11 + 5.2.2 LTS + stdio）
+- 🟢 **PR #48 拿到第三方复现**（未合并）：`execute_blender_code_for_cli` 在 main `dbbf836` 上 120s 超时 → 打补丁 **2.8s** 返回（2026-10-22 评论）→ 该坑的处置（`stdin=subprocess.DEVNULL` 本地补丁）继续有效
+- 📌 MCP 仓库快照（2026-10-23 API 实测）：最新发布仍 **v1.0.3（2026-09-11，无 v1.0.4）**；落地页 add-on 链接 **可比基线第 14 次一致**；open issues **22 未变**；**open PR 3 → 4**（新增 #66）；stars **32 → 33**、forks **32 → 33**、`licenses` GPL-3.0（第 8 轮一致）
+- ⚠️ SAC 单应用白名单**仍待核验**（#65 无新回复，`updated_at` 停在 10-19）
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.5.1**（远端基线 v3.5.0）
+
 ### v3.5.0 (2026-10-20) — 排障表 SAC 条目重写（旧建议被官方 issue 证伪）
 
 - 🔴 **纠正一条会误导人的处置建议**：v3.3.0 起排障表写「Windows 上 `blender-mcp.exe` 被 Smart App Control 拦 → **改用官方 add-on 通道**」。**官方 issue #65（2026-10-19）证伪**：用户在**官方 MCPB 扩展**里同样被拦 —— 拦截对象是扩展自带 `.venv\Scripts\blender-mcp.exe`，`Get-AuthenticodeSignature` = `NotSigned`，Claude Desktop 报 "MCP Blender: Server disconnected"，Windows Code Integrity **event 3077**（与 #56 的 uv 安装路径同因）。
 - 🟢 排障条目改为**机制 + 可执行判据**：SAC enforcement 只放行「应用智能服务识别」或「受信任 CA 签名」的二进制（Microsoft Learn 原文，2026-10-06 版）→ 未签名 launcher **必被拦**；处置改为「先验签名 → 把 SAC 决策交还用户（关闭属高风险，企业域策略不动）」。
 - ⚠️ 留了 **待核验**：SAC 是否支持单应用白名单（本次未查到官方入口，不写死）。
 - 📌 MCP 仓库快照（2026-10-20 API 实测）：最新发布仍 **v1.0.3（2026-09-11，无 v1.0.4）**；落地页 add-on 链接 **`mcp-1.0.3.zip` 可比基线连续 11 次一致**；open issues **21 → 22**（新增 #65）；open PR **#48 / #47 / #43 仍全部未合并**；stars **28 → 30**、forks 31、`licenses` = GPL-3.0（第 5 轮一致）
-- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.5.0**；**双平台发布待用户确认**（当前远端基线 = v3.4.0）
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.5.0**；**已双平台发布（2026-10-20 13:21）**：GitHub `taosiuman/blender-skill` tag `v3.5.0` ＋ ClawHub `@taosiuman/blender-mcp` latest=**3.5.0**
 
 ### v3.4.0 (2026-10-16) — 2 条新官方 issue 工具行为坑（每日快扫）
 - 🟢 排障表新增 **2 条官方 issue 可溯源的工具行为坑**：
