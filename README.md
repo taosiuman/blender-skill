@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.5.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.2**；`5.2.3` 仍是 RC 构建、已换 hash `c361aec8a863` 但**未发布**）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+**Version: 3.5.1** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
 
 ---
 
@@ -28,6 +28,15 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ---
 
+## What's New in v3.5.1 / 更新内容
+
+### Version Baseline Corrected + Thumbnail Root Cause / 版本基准更正 + 缩略图根因（v3.5.1 · 2026-10-23）
+- 🔴 **Blender 5.2.3 LTS 已于 2026-10-22 正式发布**（与 4.5.15 同日）：镜像 `blender-5.2.3-*` 全平台包 ＋ `.msi` HTTP 200 ＋ Gitea tag `v5.2.3`，官网首页 "LATEST RELEASE … Released October 22, 2026"。本 README 原写「5.2.3 仍是 RC、未发布」**已过期**，版本口径统一改为 **5.2.x LTS（当前 5.2.3）**
+- 🟢 **缩略图全分辨率坑补根因**（官方 PR **#66**，2026-10-22，未合并）：上下文管理器在 `INVOKE_DEFAULT` job **返回时**就恢复渲染设置，job 真正执行在后面 → 读到的是用户原设置；另 EEVEE 引擎标识需匹配 `BLENDER_EEVEE`。作者实测 1920×1080/1.6 MB/~9 s → 320×180/50 KB/0.8~1.3 s
+- 🟢 **PR #48 获第三方复现**（未合并）：`execute_blender_code_for_cli` 在 main `dbbf836` 上 120 s 超时 → 打补丁 **2.8 s**（2026-10-22）→ 本地 `stdin=subprocess.DEVNULL` 补丁的处置继续有效
+- 📌 MCP 快照（2026-10-23）：发布仍 **v1.0.3**（无 v1.0.4）｜落地页链接**第 14 次一致**｜open issues **22 未变**｜**open PR 3 → 4**（新增 #66）｜stars/forks **33**
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.5.1**）
+
 ## What's New in v3.5.0 / 更新内容
 
 ### SAC Troubleshooting Corrected / 排障表 SAC 条目重写（v3.5.0 · 2026-10-20）
@@ -35,7 +44,7 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 - 🟢 条目改为机制 + 判据：SAC enforcement 只放行「被应用智能服务识别」或「受信任 CA 签名」的二进制（Microsoft Learn）→ 未签名 launcher 必被拦；处置 = 先验签名 → 决策（是否关闭 SAC）交还用户，企业域策略不动
 - ⚠️ 留待核验：SAC 是否支持单应用白名单（未查到官方入口，不写死）
 - 📌 MCP 仓库快照（2026-10-20）：最新发布仍 **v1.0.3**（无 v1.0.4）｜落地页链接**连续 11 次一致**｜Open issues **21 → 22**（新增 #65）｜Open PR **#48 / #47 / #43 仍未合并**｜stars 28 → 30
-- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.5.0**）；**双平台发布待用户确认**（远端基线 = v3.4.0）
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.5.0**）；**已双平台发布（2026-10-20 13:21）**：GitHub tag `v3.5.0` ＋ ClawHub latest=3.5.0
 
 ## What's New in v3.4.0 / 更新内容
 
@@ -178,10 +187,10 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 | Version | Status | Support |
 |---------|--------|---------|
-| 5.2 LTS (current 5.2.2) | Stable | Until 2028-07 |
-| 5.3 | **Beta**（API 自 Beta 起稳定；**RC 2026-11-04** → 发布 **2026-11-10**） | 前瞻兼容（迁移窗口已开），最新核验 **2026-10-11** |
+| 5.2 LTS (current 5.2.3, 2026-10-22) | Stable | Until 2028-07 |
+| 5.3 | **Beta**（API 自 Beta 起稳定；**RC 2026-11-04** → 发布 **2026-11-10**） | 前瞻兼容（迁移窗口已开），最新核验 **2026-10-23** |
 | 5.1 | Stable | Legacy |
-| 4.5 LTS | Supported | Until 2027-07 |
+| 4.5 LTS (current 4.5.15, 2026-10-22) | Supported | Until 2027-07 |
 | 5.4 | Alpha（main） | **不承诺**：仅 `hasattr` 兜底 |
 
 ---
@@ -211,11 +220,18 @@ Apache-2.0
 > 顺序：最新在上。**版本号三处必须一致**（`SKILL.md` frontmatter / 本文件顶部版本行 / 本 Changelog 首条）。
 > 2026-10-11 修复：本节此前**重复两遍**且缺失 v3.1.0 / v3.1.1 条目（v3.0.0 与 v2.5.x 混排、还残留一行截断文本）。
 
+### v3.5.1 (2026-10-23) — 版本基准更正（5.2.3 LTS 已发布）+ 缩略图坑补根因
+- 🔴 **Blender 5.2.3 LTS 与 4.5.15 已于 2026-10-22 正式发布**（镜像包 + `.msi` 200 + Gitea tag 三件套全绿；官网 "LATEST RELEASE … Released October 22, 2026"）→ 本 README 原写「5.2.3 仍是 RC、未发布」**已过期**，全技能版本口径改为 **5.2.x LTS（当前 5.2.3）**
+- 🟢 排障表「缩略图全分辨率」条目补**根因**（官方 PR **#66**，未合并）：上下文管理器在 `INVOKE_DEFAULT` job **返回时**就恢复设置，job 实际执行读到用户原值；另 EEVEE 标识需匹配 `BLENDER_EEVEE`。实测 1920×1080/1.6 MB/~9 s → 320×180/50 KB/0.8~1.3 s
+- 🟢 **PR #48 获第三方复现**：`execute_blender_code_for_cli` main `dbbf836` 120 s 超时 → 打补丁 2.8 s → 「本地 `stdin=subprocess.DEVNULL` 补丁」处置继续有效
+- 📌 add-on **v1.0.3** 未变（无 v1.0.4）；落地页链接**第 14 次一致**；open issues **22 未变**；open PR **3 → 4**（新增 #66）；stars/forks **33**
+
 ### v3.5.0 (2026-10-20) — 排障表 SAC 条目重写（旧建议被官方 issue #65 证伪）
 - 🔴 **纠正**：「`blender-mcp.exe` 被 SAC 拦 → 改用官方 add-on 通道」已不成立 —— 官方 MCPB 扩展自带的 `.venv\Scripts\blender-mcp.exe` 同样 `NotSigned`、同样触发 Code Integrity event 3077（issue **#65**，与 #56 同因）
 - 🟢 条目改为机制 + 判据（SAC 只放行智能服务识别 / 受信任 CA 签名的二进制）+ 处置（先验签名 → 关闭 SAC 的决策交还用户）
 - ⚠️ 待核验：SAC 是否支持单应用白名单
 - 📌 **add-on v1.0.3** 未变（无 v1.0.4）；落地页链接连续 11 次一致；Open issues **21 → 22**；Open PR #48 / #47 / #43 仍未合并；stars 28 → 30
+- ✅ **已双平台发布（2026-10-20 13:21）**：GitHub tag `v3.5.0` ＋ ClawHub latest=3.5.0（Moderate CLEAN）
 
 ### v3.4.0 (2026-10-16) — 2 条新官方 issue 工具行为坑
 - 🟢 排障表补 **2 条**官方 issue：**#63**（Windows `SO_REUSEADDR` → 第二个 Blender 静默占用端口，客户端始终连第一个实例；20/20 复现）｜**#64**（`result` 必须为 dict，官方 instructions 说可返回 list 属文案误导）
