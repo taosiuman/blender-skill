@@ -4,7 +4,9 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.5.1** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+**Version: 3.6.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+
+> ⚠️ **平台前提**（2026-10-25 核验）：官方 add-on 要求 Blender ≥ 5.1，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建** → **Intel Mac 上没有可用的「5.1+ × 官方 MCP」组合**（4.5 LTS 是最后一个支持 Intel 的版本）。Windows / Linux 不受影响（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）。来源：<https://www.blender.org/download/requirements/>
 
 ---
 
@@ -27,6 +29,15 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 **执行前请始终审查代码。保持重要 `.blend` 文件的备份。**
 
 ---
+
+## What's New in v3.6.0 / 更新内容
+
+### Platform Prerequisite: Intel Mac Has No Valid Combo / 平台前提：Intel Mac 无可用组合（v3.6.0 · 2026-10-25）
+- 🟢 **新增平台前提**：官方 add-on 硬性要求 **Blender ≥ 5.1**，而 **Blender 5.0 起 macOS 只有 Apple Silicon 构建**（需 Apple Silicon + macOS 13 Ventura 起；`4.5 LTS` 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 上「Blender 5.1+ × 官方 MCP」这个组合根本不存在**。此前技能只写「Blender 5.1+」，Intel Mac 用户会照着试到怀疑人生
+- 🟢 Windows / Linux 不受影响，但 Windows 有硬门槛：**4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM、2 GB VRAM**（来源 <https://www.blender.org/download/requirements/>，2026-10-25 核验）
+- 📌 **MCP 生态零增量**（2026-10-25 Gitea API，与 10-24 逐字段一致）：open issues **22**｜open PR **4**（#66 / #48 / #47 / #43 均未合并）｜releases **6 条 / v1.0.3**｜stars 33 / forks 33 / watchers 12 / `licenses` GPL-3.0｜assets 自然增长（`.mcpb` **39193** / `.zip` **341649**）
+- 📌 版本面：5.2.3 LTS 现行（10-22 发布、未撤回）｜5.3 Beta "until November 4, 2026"（RC 11-04 → 发布 11-10）｜**5.4 Alpha "until February 3, 2027"**（官方首次给结束日期）→ 基线不前移
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.6.0**）
 
 ## What's New in v3.5.1 / 更新内容
 
@@ -219,6 +230,12 @@ Apache-2.0
 
 > 顺序：最新在上。**版本号三处必须一致**（`SKILL.md` frontmatter / 本文件顶部版本行 / 本 Changelog 首条）。
 > 2026-10-11 修复：本节此前**重复两遍**且缺失 v3.1.0 / v3.1.1 条目（v3.0.0 与 v2.5.x 混排、还残留一行截断文本）。
+
+### v3.6.0 (2026-10-25) — 补「平台前提」：Intel Mac 上没有可用组合
+- 🟢 **新增平台前提**：官方 add-on 要求 **Blender ≥ 5.1**，而 Blender **5.0 起 macOS 只出 Apple Silicon 构建**（4.5 LTS 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 无法使用「5.1+ × 官方 MCP」**。Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM、2 GB VRAM（<https://www.blender.org/download/requirements/>，2026-10-25）
+- 📌 **MCP 零增量**（与 10-24 逐字段一致）：open issues 22｜open PR 4（全未合并）｜releases 6 / **v1.0.3**｜stars 33 / forks 33 / watchers 12 / GPL-3.0｜assets 下载数自然增长（39193 / 341649）→ 排障表与工具坑清单无内容需改
+- 📌 版本面：5.2.3 LTS 现行｜5.3 Beta until 11-04（发布 11-10）｜**5.4 Alpha until 2027-02-03**（官方首次给出结束日期）
+- ⚠️ 待核验：SAC 单应用白名单（#65 无新回复）
 
 ### v3.5.1 (2026-10-23) — 版本基准更正（5.2.3 LTS 已发布）+ 缩略图坑补根因
 - 🔴 **Blender 5.2.3 LTS 与 4.5.15 已于 2026-10-22 正式发布**（镜像包 + `.msi` 200 + Gitea tag 三件套全绿；官网 "LATEST RELEASE … Released October 22, 2026"）→ 本 README 原写「5.2.3 仍是 RC、未发布」**已过期**，全技能版本口径改为 **5.2.x LTS（当前 5.2.3）**
