@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.5.1
+version: 3.6.0
 metadata:
   octop:
     emoji: "🔌"
@@ -22,7 +22,8 @@ Connect to and control a running Blender instance via the official Blender MCP S
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
 **Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current **5.2.3**, 2026-10-22 发布), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
-**Last verified**: **2026-10-20**（每日快扫：add-on 仍 **v1.0.3**（2026-09-11，无 v1.0.4），落地页可比基线连续 11 次一致；MCP open issues **21 → 22**，新增 **#65**（Windows SAC 把**官方 MCPB 扩展自带**的 `blender-mcp.exe` 也拦了 → 旧建议「改用官方通道」被证伪）→ 排障表 SAC 条目重写；完整清单见 `knowledge/blender-mcp/research-tracker.md`）
+**Platform prerequisite**（2026-10-25 核验）: 官方 add-on 要求 **Blender ≥ 5.1**，而 Blender **5.0 起 macOS 只出 Apple Silicon 构建**（Apple Silicon + macOS 13 Ventura 起；`4.5 LTS` 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 上不存在可用的「Blender 5.1+ × 官方 MCP」组合**；Windows / Linux 无此限制（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）
+**Last verified**: **2026-10-25**（周度深度整合：MCP 生态 **零增量** —— open issues **22**、open PR **4**（#66/#48/#47/#43 全未合并）、releases **6 条 / 最新 v1.0.3**、stars 33 / forks 33 / watchers 12 / `licenses` GPL-3.0、`updated_at` 仍 2026-09-29；本轮技能新增的是**平台前提**一条，故逐版递增到 v3.6.0。完整清单见 `knowledge/blender-mcp/research-tracker.md`）
 
 ---
 
@@ -994,6 +995,14 @@ gemini
 ---
 
 ## Changelog
+
+### v3.6.0 (2026-10-25) — 补「平台前提」：Intel Mac 上没有可用组合
+
+- 🟢 **新增平台前提行**（`Version support` 下方）：官方 add-on 要求 **Blender ≥ 5.1**，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建**（Apple Silicon + macOS 13 Ventura 起；`4.5 LTS` 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 上不存在「Blender 5.1+ × 官方 MCP」这个组合**，别让用户在 Intel Mac 上反复试。Windows / Linux 无此限制（Windows：4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM、2 GB VRAM）。来源：<https://www.blender.org/download/requirements/>（2026-10-25 核验）；据此同时在 `knowledge/blender/compat-4x-to-5x.md` 补了「平台断代」一节（含 macOS arm64-only 对预编译二进制/轮子分发的三条影响）
+- 📌 **MCP 生态零增量**（2026-10-25 Gitea API 实测，与 10-24 逐字段一致）：open issues **22**、open PR **4**（#66 / #48 / #47 / #43 均未合并）、releases **6 条 / 最新 v1.0.3（2026-09-11）**、stars **33** / forks **33** / watchers **12**、`licenses` **GPL-3.0**、`updated_at` 仍 **2026-09-29**；assets 下载数自然增长（`blender-1.0.3.mcpb` **39193** / `mcp-1.0.3.zip` **341649**）→ **排障表与工具坑清单无内容需改**
+- 📌 **版本面**：5.2.3 LTS 仍是现行正式版（2026-10-22 发布、未被撤回）；5.3 Beta **"until November 4, 2026"**（RC 11-04 → 发布 11-10）；**5.4 Alpha 官方首次给结束日期 "until February 3, 2027"** → 5.4 的 API 仍不可依赖，本技能不回退也不前移基线
+- ⚠️ SAC 单应用白名单**仍待核验**（#65 无新回复）
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.6.0**（远端基线 v3.5.1）
 
 ### v3.5.1 (2026-10-23) — 版本基准更正（5.2.3 LTS 已发布）+ 缩略图坑补根因
 
