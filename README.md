@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.6.0** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+**Version: 3.6.1** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
 
 > ⚠️ **平台前提**（2026-10-25 核验）：官方 add-on 要求 Blender ≥ 5.1，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建** → **Intel Mac 上没有可用的「5.1+ × 官方 MCP」组合**（4.5 LTS 是最后一个支持 Intel 的版本）。Windows / Linux 不受影响（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）。来源：<https://www.blender.org/download/requirements/>
 
@@ -29,6 +29,16 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 **执行前请始终审查代码。保持重要 `.blend` 文件的备份。**
 
 ---
+
+## What's New in v3.6.1 / 更新内容
+
+### "MCP Can't Connect" — the Outermost Cause Is uv Dependency Download / 「连不上」的最外层根因（v3.6.1 · 2026-10-25）
+- 🟢 **排障表新增一条**：日志里出现 `Failed to download <pkg>` ＋ **`invalid peer certificate: UnknownIssuer`**（`files.pythonhosted.org` 的 wheel，如 `rpds-py` / `pydantic-core` / `pyyaml`）→ **uv 建不起 venv**，最终表现仍是 "MCP Blender: Server disconnected"。来源 = 官方 issue **#67**（2026-10-25，正文含完整 Claude Desktop 日志）
+- 🔴 **与 SAC 拦截严格分层**：#56 / #65 = **进程启动**被 Windows Smart App Control 拦签名；#67 = **依赖下载**（更早一层）被 TLS 中间人拦证书 → **命中 #67 时按 SAC 路径排查纯属白折腾**
+- 🟢 处置三条路径：`UV_NATIVE_TLS=1`（uv 走系统信任库）／`SSL_CERT_FILE=<ca.pem>`（企业根证书）／代理或杀软对该域名关闭 HTTPS 解密；修完用 `uvx blender-mcp@1.0.3` 复验依赖可下载
+- 📌 **MCP 生态增量**（2026-10-25 10:00 Gitea API）：open issues **22 → 23（仅 #67）**｜open PR **4**（#66 / #48 `mergeable: true` 未合并，#47 / #43 `mergeable: false`）｜releases **6 条 / v1.0.3**｜stars 33 / forks 33 / watchers 12 / `licenses` GPL-3.0｜assets `.mcpb` **39531** / `.zip` **344916**（自然增长）
+- 📌 版本面：5.2.3 LTS 现行｜5.3 Beta（RC 11-04 → 发布 11-10，daily `32f5c9c48bca` 含 GSplat 修复）｜5.4 Alpha 至 **2027-02-03**；镜像仍无 `Blender5.3/`、`Blender5.4/` → 基线不前移
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.6.1**）
 
 ## What's New in v3.6.0 / 更新内容
 
@@ -230,6 +240,14 @@ Apache-2.0
 
 > 顺序：最新在上。**版本号三处必须一致**（`SKILL.md` frontmatter / 本文件顶部版本行 / 本 Changelog 首条）。
 > 2026-10-11 修复：本节此前**重复两遍**且缺失 v3.1.0 / v3.1.1 条目（v3.0.0 与 v2.5.x 混排、还残留一行截断文本）。
+
+### v3.6.1 (2026-10-25) — 「连不上」的最外层根因：uv 依赖下载被 TLS 证书拦截（官方 issue #67）
+- 🟢 排障表新增：`Failed to download …` + **`invalid peer certificate: UnknownIssuer`**（`files.pythonhosted.org`）→ uv 建不起 venv，表现仍是 "MCP Blender: Server disconnected"（官方 issue **#67**，2026-10-25，日志里 `rpds-py` / `pydantic-core` / `pyyaml` 三包同报）
+- 🔴 **与 #56 / #65 严格分层**：#56 / #65 = 进程启动被 Windows SAC 拦签名；#67 = 依赖下载（更早一层）被 TLS 中间人拦证书 → 命中 #67 时按 SAC 排查会白折腾
+- 🟢 处置：`UV_NATIVE_TLS=1` / `SSL_CERT_FILE=<ca.pem>` / 对该域名关 HTTPS 解密；修完 `uvx blender-mcp@1.0.3` 复验
+- 📌 MCP 增量：open issues **22 → 23（仅 #67）**｜open PR 仍 4（#66 / #48 `mergeable: true` 未合并）｜releases 6 / **v1.0.3**｜stars 33 / forks 33 / GPL-3.0｜assets 39531 / 344916（自然增长）
+- 📌 版本面：5.2.3 LTS 现行｜5.3 Beta（RC 11-04 → 发布 11-10）｜5.4 Alpha until 2027-02-03；镜像仍无 `Blender5.3/`、`Blender5.4/`
+- ⚠️ 待核验：SAC 单应用白名单（#65 无新回复）
 
 ### v3.6.0 (2026-10-25) — 补「平台前提」：Intel Mac 上没有可用组合
 - 🟢 **新增平台前提**：官方 add-on 要求 **Blender ≥ 5.1**，而 Blender **5.0 起 macOS 只出 Apple Silicon 构建**（4.5 LTS 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 无法使用「5.1+ × 官方 MCP」**。Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM、2 GB VRAM（<https://www.blender.org/download/requirements/>，2026-10-25）
