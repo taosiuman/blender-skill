@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.6.0
+version: 3.6.1
 metadata:
   octop:
     emoji: "🔌"
@@ -364,6 +364,7 @@ result = {"status": "created", "name": bpy.context.active_object.name}
 | `get_python_api_docs` 查成员文档查不到（`bpy.types.Object.location`） | 成员解析需要**重复类名**（官方 issue **#62**，2026-10-10） | 用 `bpy.types.Object.Object.location`；`bpy.ops.*` 和整类查询正常 |
 | macOS 上 `.mcpb` 装不上（"Operation not permitted"） | Claude Desktop 的 `.mcpb` 安装助手与 uv cache 权限冲突（官方 issue **#57**） | macOS 走 **add-on + `uvx`** 路线，别依赖 `.mcpb` |
 | Windows 上 `blender-mcp.exe` 被拦（`os error 4551` / Claude Desktop "MCP Blender: Server disconnected"） | **Smart App Control（SAC）enforcement 模式只放行「被 Microsoft 应用智能服务识别」或「受信任 CA 签名」的二进制**（Microsoft Learn 原文）→ **未签名的 `blender-mcp.exe` 必被拦**。⚠️ **2026-10-19 起确认：换成官方 MCPB 扩展也躲不过** —— 扩展自带 `.venv\Scripts\blender-mcp.exe` 同样 `NotSigned`、同样触发 Code Integrity event 3077（官方 issue **#56** 走 uv 安装 / **#65** 走官方扩展，两者同因） | **旧建议「改用官方 add-on / MCPB 通道」已被 #65 证伪，不要再用**。可行路径：① 先 `Get-AuthenticodeSignature .venv\Scripts\blender-mcp.exe` 确认是否 `NotSigned`（SAC 场景 100% 是）；② 让用户在 **SAC 状态**（设置 → 隐私和安全性 → Windows 安全中心 → 应用和浏览器控制）上做决定 —— 关闭 SAC 属高风险改动、企业域策略下不要动，**先确认再谈**；③ ⚠️ 待核验：SAC 是否支持「为单个应用加白名单」（据本机观察没有该入口，需查 Microsoft 文档确认后写死） |
+| **扩展/服务器起不来，日志里是 `Failed to download <pkg>` + `invalid peer certificate: UnknownIssuer`** | **比 #56/#65 更早一层**：`uv` 建 venv 时要拉 wheel（`rpds-py` / `pydantic-core` / `pyyaml` 等，来自 `files.pythonhosted.org`），**本机 TLS 信任链被中间人拦截**（企业代理 / 杀软 HTTPS 扫描 / 自签 CA）→ 依赖装不上 → 表面现象仍是 "MCP Blender: Server disconnected"（官方 issue **#67**，2026-10-25） | **判据**：在客户端日志里搜 `invalid peer certificate: UnknownIssuer` 或 `Failed to download`，命中即属本类，**不要按 SAC 路径排查**。处置三选一：① 让 uv 走系统信任库 `UV_NATIVE_TLS=1`；② 指定企业根证书 `SSL_CERT_FILE=<ca.pem>`（uv 亦认 `REQUESTS_CA_BUNDLE` 同值）；③ 让代理/杀软对该域名关闭 HTTPS 解密，或临时直连。修完重跑一次 `uvx blender-mcp@1.0.3` 验证依赖可下载 |
 | **Windows 多开 Blender：服务显示"已启动"、客户端却连到别的实例**（改了没反应 / 操作落到另一个窗口） | `mcp_to_blender_server.py` 在 `bind()` **之前**设了 `SO_REUSEADDR`；Windows 语义允许**第二个 socket 绑定已监听端口** → 第二个实例不报错，客户端始终连第一个（官方 issue **#63**，Win11 + Blender 5.2.2 LTS + blender_mcp 1.0.2 实测 20/20 复现；建议官方改用 `SO_EXCLUSIVEADDRUSE`） | **只开一个 Blender 实例**再启服务；或先关掉旧实例再 Start；排查时看端口占用（`netstat -ano \| findstr 9876`）而非只看按钮状态 |
 | `The result variable must be a dict, not list. Wrap your return value: result = {"key": value}` | add-on **只接受 dict**；官方 server instructions / `prompts.yml` L48 声称可返回 "dicts, lists" 属**文案与实现不一致**（官方 issue **#64**） | 返回值**一律包成 dict**：`result = {"items": [...]}`；别按 instructions 返回裸 list |
 
@@ -995,6 +996,14 @@ gemini
 ---
 
 ## Changelog
+
+### v3.6.1 (2026-10-25) — 「连不上」的最外层根因：uv 依赖下载被 TLS 证书拦截（官方 issue #67）
+
+- 🟢 排障表新增一条：`Failed to download …` + **`invalid peer certificate: UnknownIssuer`**（`files.pythonhosted.org` 的 wheel）→ **uv 建不起 venv**，表现仍是 "MCP Blender: Server disconnected"。来源 = 官方 issue **#67**（2026-10-25，正文含完整 Claude Desktop 日志，`rpds-py` / `pydantic-core` / `pyyaml` 三个包均报同一错）。
+- 🔴 **与 #56 / #65 严格分层**（三条同症状、不同层）：#56 / #65 = **进程启动**被 Windows SAC 拦签名；**#67 = 依赖下载**（更早一层）被 TLS 中间人拦证书。**命中 #67 时按 SAC 路径排查会白折腾**。
+- 🟢 处置给了三条可执行路径：`UV_NATIVE_TLS=1`（uv 走系统信任库）/ `SSL_CERT_FILE=<ca.pem>`（企业根证书）/ 代理或杀软对该域名关掉 HTTPS 解密；修完用 `uvx blender-mcp@1.0.3` 复验依赖可下载。
+- 📌 MCP 仓库快照（2026-10-25 10:00 API 实测）：open issues **22 → 23（+1 = #67）**；open PR 仍 **4**（#66 / #48 均 `mergeable: true` 未合并，#47 / #43 `mergeable: false`）；releases **6 条 / 最新 v1.0.3**；stars 33 / forks 33 / watchers 12 / `licenses` GPL-3.0；assets `blender-1.0.3.mcpb` 39531 / `mcp-1.0.3.zip` 344916（自然增长）。
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.6.1**（远端基线 v3.6.0；ClawHub 侧 3.6.0 扫描尚未放行，本次一并覆盖）
 
 ### v3.6.0 (2026-10-25) — 补「平台前提」：Intel Mac 上没有可用组合
 
