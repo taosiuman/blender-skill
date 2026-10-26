@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.6.1** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
+**Version: 3.6.2** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 Beta**（API 已稳定；RC 2026-11-04 → 发布 2026-11-10）
 
 > ⚠️ **平台前提**（2026-10-25 核验）：官方 add-on 要求 Blender ≥ 5.1，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建** → **Intel Mac 上没有可用的「5.1+ × 官方 MCP」组合**（4.5 LTS 是最后一个支持 Intel 的版本）。Windows / Linux 不受影响（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）。来源：<https://www.blender.org/download/requirements/>
 
@@ -29,6 +29,14 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 **执行前请始终审查代码。保持重要 `.blend` 文件的备份。**
 
 ---
+
+## What's New in v3.6.2 / 更新内容
+
+### v3.6.2 (2026-10-26) — ClawHub 安全扫描口径修正 / Security-scan remediations
+- 🔴 **ClawHub 把已上线的 v3.5.1 重新判为 `suspicious`**（`decision: fail`、skillspector `CRITICAL` / `DO_NOT_INSTALL`、`max_issue_severity: HIGH`，2026-10-23T02:37Z 扫描）→ **3.6.0 / 3.6.1 的提交因此一直 pending**，`latest` 停在 3.5.1
+- 🟢 修掉 4×HIGH：历史 Changelog 里描述「已移除」的那句话仍带着 curl-pipe-shell 字面量 → 改为 `curl-pipe-to-shell` 表述
+- 🟡 仍存 6×HIGH：`SKILL.md (partial)` —— SKILL.md ~64 KB 超出扫描器单文件预算，只做部分分析即计罚 → 需拆 `references/`，另立任务
+- ✅ 版本号三处一致（SKILL.md frontmatter / 本 README 版本行 / 两处 Changelog = **3.6.2**）
 
 ## What's New in v3.6.1 / 更新内容
 
@@ -108,7 +116,7 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 
 ### Previous Updates / 之前的更新
 
-**v2.5.9 (2026-09-23):** Security release — removed dangerous `curl | sh` pattern, added explicit bpy-execution warnings, pinned dependency versions, bilingual (EN/CN) docs
+**v2.5.9 (2026-09-23):** Security release — removed dangerous **curl-pipe-to-shell** pattern, added explicit bpy-execution warnings, pinned dependency versions, bilingual (EN/CN) docs
 
 **v2.5.8:** 8 new APIs + 2 breaking changes documented
 - CollectionChild.sort_index, ColorManagedInputColorspaceSettings.interop_id, etc.
@@ -300,7 +308,7 @@ Apache-2.0
 - 🏗 修复版本号漂移：`version` / README 版本行 / Changelog 三处强制一致
 
 ### v2.5.9 (2026-09-23) — Security Release / 安全发布
-- 🔒 Removed dangerous `curl | sh` pattern from documentation / 从文档中移除危险的 `curl | sh` 模式
+- 🔒 Removed dangerous **curl-pipe-to-shell** pattern from documentation / 从文档中移除危险的 **curl-pipe-to-shell** 模式
 - 🔒 Added explicit security warnings about bpy code execution / 添加关于 bpy 代码执行的明确安全警告
 - 🔒 Pinned dependency versions (uvx, pip) / 固定依赖版本（uvx、pip）
 - 🔒 Clarified telemetry defaults and opt-out / 明确遥测默认值和退出方式
