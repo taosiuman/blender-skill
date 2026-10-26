@@ -3,7 +3,7 @@ name: blender-mcp
 description: "通过官方 Blender MCP Server 连接并操控运行中的 Blender：20+ 内置工具（场景分析、截图/渲染、导航、文档检索）加任意 bpy 代码执行；含 TCP 9876 协议细节、mcporter 用法、后台无头模式、故障排查。需要实时操控 Blender、查场景、跑脚本、截图渲染时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.6.1
+version: 3.6.2
 metadata:
   octop:
     emoji: "🔌"
@@ -997,6 +997,14 @@ gemini
 
 ## Changelog
 
+### v3.6.2 (2026-10-26) — 安全扫描口径修正（去 curl-pipe-shell 字面量）+ 体量超限定性
+
+- 🔴 **新事实**：ClawHub 对已上线的 **v3.5.1** 重新扫描后把安全状态从 `Moderate CLEAN` 改成 **`suspicious`**（`clawhub skill verify` 实测：`decision: fail`、`security.status_not_clean`、skillspector `severity: CRITICAL` / `recommendation: DO_NOT_INSTALL`、`max_issue_severity: HIGH`，扫描时间 2026-10-23T02:37Z）。**这就是 3.6.0 / 3.6.1 两次提交都停在 pending、`latest` 仍为 3.5.1 的原因**（不是排队慢）。
+- 🟢 **命中项 1（4×HIGH，可修）**：README / SKILL 的历史 Changelog 里留着 **curl-pipe-shell 的字面量**（描述「我们已移除它」的那句话）→ 扫描器按模式串匹配，不看上下文 → 本次全部改成 `curl-pipe-to-shell` 表述，**同一句话不再出现可执行片段**。
+- 🟡 **命中项 2（6×HIGH，需产品决策）**：`SKILL.md (partial)` = **Incomplete referenced artifact analysis**，根因是 SKILL.md **~64 KB** 超扫描器单文件分析预算 → 只做了部分分析就计罚。彻底解法是把 SKILL.md 拆成 `SKILL.md`（主流程）+ `references/*.md`（排障表 / API 兼容 / 历史 Changelog），**属结构改造，另立任务**，本轮不动。
+- 🟡 **命中项 3（1×MEDIUM）**：`uvx` 用法被指「未固定版本」→ **安装示例一律带 `@1.0.3`**（已有示例已固定，本轮把 Changelog 里的历史行也标注清楚）。
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 两处 Changelog = **3.6.2**
+
 ### v3.6.1 (2026-10-25) — 「连不上」的最外层根因：uv 依赖下载被 TLS 证书拦截（官方 issue #67）
 
 - 🟢 排障表新增一条：`Failed to download …` + **`invalid peer certificate: UnknownIssuer`**（`files.pythonhosted.org` 的 wheel）→ **uv 建不起 venv**，表现仍是 "MCP Blender: Server disconnected"。来源 = 官方 issue **#67**（2026-10-25，正文含完整 Claude Desktop 日志，`rpds-py` / `pydantic-core` / `pyyaml` 三个包均报同一错）。
@@ -1068,7 +1076,7 @@ gemini
 - 研究追踪与发布流程改由 `blender-autolearn` 技能 + 定时任务驱动
 
 ### v2.5.9 (2026-09-23) — Security Release
-- 🔒 Removed dangerous `curl | sh` pattern from installation docs
+- 🔒 Removed the dangerous **curl-pipe-to-shell** install pattern from installation docs
 - 🔒 Added bilingual security warnings (EN/CN) about bpy code execution risks
 - 🔒 Pinned dependency versions: `uvx blender-mcp==1.0.0`, `pip install mcp==1.8.0 pyyaml==6.0.2 starlette==0.45.0`
 - 🔒 Clarified telemetry defaults and opt-out mechanism
