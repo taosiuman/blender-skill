@@ -3,7 +3,7 @@ name: blender-mcp
 description: "连接运行中的 Blender：安装官方 Lab MCP 插件，再用固定版本的服务进程调用场景、截图、渲染和文档工具，或执行 bpy。需要实时操控 Blender 时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.7.0
+version: 3.7.1
 metadata:
   octop:
     emoji: "🔌"
@@ -100,6 +100,13 @@ uvx blender-mcp==1.0.0
 > - **Blender add-on**（官方 Lab 发布，装在 Blender 里）：当前 **v1.0.3** —— 见上面 Option A 链接
 > - **MCP Server 包**（`uvx`/`pip` 装的 Python 进程）：本文档 pin 在 **1.0.0**（PyPI 包 `blender-mcp`）
 > 两者版本号各自独立；排障时先确认「哪一半」出问题。
+
+> ⚠️ **分发渠道（2026-11-07 补，官方 issue #71）**：官方 `lab/blender_mcp` **没有发布到 PyPI** —— 官方只走两条渠道：
+> ① **Blender Extensions / `.mcpb`**（`releases/download/v1.0.3/mcp-1.0.3.zip`，见 Option A/B）；
+> ② **Git 源码**（`mcp/blmcp/` 直接用 `uv`/`pip install -e` 装）。
+> PyPI 上的包名 `blender-mcp` 是**第三方实现**（同样用 TCP 9876 桥接，但代码基线不同），**不是 Blender 官方包**；
+> 企业 MCP 注册表（Azure API Center 等）要登记官方实现时，请引用 **MCPB release URL**，别引用 PyPI 包名。
+> Option D 的 `uvx blender-mcp==1.0.0` 命中的是 PyPI 那个第三方包 —— **要官方实现请走 Option A/B**。
 
 ### 2. Start the Blender MCP Server
 
