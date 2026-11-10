@@ -3,7 +3,7 @@ name: blender-mcp
 description: "连接运行中的 Blender：安装官方 Lab MCP 插件，再用固定版本的服务进程调用场景、截图、渲染和文档工具，或执行 bpy。需要实时操控 Blender 时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.7.1
+version: 3.7.2
 metadata:
   octop:
     emoji: "🔌"
