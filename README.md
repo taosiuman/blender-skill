@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.7.1** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3 RC**（`Release Candidate until November 10, 2026`；daily `f78a5e153839`）
+**Version: 3.7.2** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3（2026-11-10 发布日）**：daily 已翻 `Stable`（`02f0899d78e3`），但镜像 `Blender5.3/`、Gitea tag `v5.3.0`、官网 LATEST 三项**截止 11-10 10:00 仍未落地** → 以 5.2.3 LTS 为生产基准
 
 > ⚠️ **平台前提**（2026-10-25 核验）：官方 add-on 要求 Blender ≥ 5.1，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建** → **Intel Mac 上没有可用的「5.1+ × 官方 MCP」组合**（4.5 LTS 是最后一个支持 Intel 的版本）。Windows / Linux 不受影响（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）。来源：<https://www.blender.org/download/requirements/>
 
