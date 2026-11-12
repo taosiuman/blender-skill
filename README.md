@@ -4,7 +4,7 @@ An OpenClaw Agent Skill for connecting to and controlling Blender via the offici
 
 用于连接和控制 Blender 的 OpenClaw Agent 技能，通过官方 [Blender MCP Server](https://www.blender.org/lab/mcp-server/) 实现。
 
-**Version: 3.7.2** — Blender 5.1+（官方硬性要求）/ 5.2 LTS（当前 **5.2.3**，2026-10-22 正式发布）/ **5.3（2026-11-10 发布日）**：daily 已翻 `Stable`（`02f0899d78e3`），但镜像 `Blender5.3/`、Gitea tag `v5.3.0`、官网 LATEST 三项**截止 11-10 10:00 仍未落地** → 以 5.2.3 LTS 为生产基准
+**Version: 3.7.3** — Blender 5.1+（官方硬性要求）/ **生产基准 = 5.3（5.3.0，2026-11-10 正式发布，三件套全绿：镜像 `Blender5.3/` + Gitea tag `v5.3.0` + `.msi` 200）** / **兼容下限 = 5.2 LTS（5.2.4，同日发布）** / 5.4 仍 Alpha（until 2027-02-03），只用 `hasattr` 兜底
 
 > ⚠️ **平台前提**（2026-10-25 核验）：官方 add-on 要求 Blender ≥ 5.1，而 **Blender 5.0 起 macOS 只出 Apple Silicon 构建** → **Intel Mac 上没有可用的「5.1+ × 官方 MCP」组合**（4.5 LTS 是最后一个支持 Intel 的版本）。Windows / Linux 不受影响（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）。来源：<https://www.blender.org/download/requirements/>
 
@@ -29,6 +29,15 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 **执行前请始终审查代码。保持重要 `.blend` 文件的备份。**
 
 ---
+
+## What's New in v3.7.3 / 更新内容
+
+### v3.7.3 (2026-11-12) — 基线切换：生产基准 5.2 LTS → **5.3**，5.2.4 = 兼容下限
+- 🟢 用户拍板「全面更新到 5.3 然后兼容 5.2」→ **生产基准 = 5.3（5.3.0，2026-11-10 发布）**、**兼容下限 = 5.2 LTS（5.2.4）**
+- 📝 口径改了 5 处：`SKILL.md` 版本支持行 + API 兼容段、`references/api.md` 头部（en）+ 5.3 / 5.2 两个兼容段标题与说明、本 README 版本行 / 特性行 / Requirements / 版本支持表
+- ✅ 发布事实（2026-11-11 复扫三件套全绿）：镜像 `Blender5.3/` 200、Gitea tag `v5.3.0` 200、`.msi` HEAD 200；同日 5.2.4 / 4.5.16 也发布
+- 📌 MCP 生态零增量（issues 27 / PR 5 全未合并 / releases 6 · v1.0.3 / stars 37 / forks 38）→ 本次是**口径对齐版**，不是新发现版
+- ⚠️ 历史条目（≤ v3.7.2）里「以 5.2.3 LTS 为基准」是当时的正确结论，**不改写**
 
 ## What's New in v3.6.2 / 更新内容
 
@@ -134,14 +143,14 @@ This skill provides full access to Blender's Python API (`bpy`) through the MCP 
 - **3 connection modes** — mcporter (recommended), direct TCP socket, background/headless
 - **Geometry Nodes MCP integration** — data relationship queries, scene debugging, node tree inspection
 - **Auto Start** — enable in addon preferences to auto-start MCP Server on Blender launch
-- **Blender 5.1 / 5.2 LTS / 5.3 Beta compatible** — includes workarounds for all breaking API changes
+- **Blender 5.1 / 5.2 LTS (floor) / 5.3 (baseline) compatible** — includes workarounds for all breaking API changes
 
 - **20 个内置工具** — 场景分析、截图、渲染、导航、文档搜索
 - **任意 bpy 代码执行** — 通过 MCP 通道访问完整的 Python API
 - **3 种连接模式** — mcporter（推荐）、直接 TCP 套接字、后台/无头
 - **几何节点 MCP 集成** — 数据关系查询、场景调试、节点树检查
 - **自动启动** — 在插件首选项中启用，Blender 启动时自动启动 MCP Server
-- **兼容 Blender 5.1 / 5.2 LTS / 5.3 Beta** — 包含所有破坏性 API 变更的解决方案
+- **兼容 Blender 5.1 / 5.2 LTS（兼容下限）/ 5.3（生产基准）** — 包含所有破坏性 API 变更的解决方案
 
 ---
 
@@ -205,7 +214,7 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 ## Requirements / 系统要求
 
-- Blender 5.1+ (5.2.x LTS + **5.3 Beta** supported)
+- Blender 5.1+ (5.2.x LTS = compatibility floor, **5.3.x = production baseline**)
 - Python 3.13+
 - Node.js 18+ (for mcporter)
 
@@ -215,11 +224,11 @@ $env:DISABLE_TELEMETRY=true   # PowerShell
 
 | Version | Status | Support |
 |---------|--------|---------|
-| 5.2 LTS (current 5.2.3, 2026-10-22) | Stable | Until 2028-07 |
-| 5.3 | **Beta**（API 自 Beta 起稳定；**RC 2026-11-04** → 发布 **2026-11-10**） | 前瞻兼容（迁移窗口已开），最新核验 **2026-10-23** |
-| 5.1 | Stable | Legacy |
-| 4.5 LTS (current 4.5.15, 2026-10-22) | Supported | Until 2027-07 |
-| 5.4 | Alpha（main） | **不承诺**：仅 `hasattr` 兜底 |
+| **5.3 (5.3.0, 2026-11-10)** | **Stable — 生产基准** | ✅ 全功能；新代码默认目标 |
+| 5.2 LTS (current 5.2.4, 2026-11-10) | Stable — **兼容下限** | Until 2028-07；每条 5.3 路径都必须留回退 |
+| 5.1 | Stable | Legacy（按需） |
+| 4.5 LTS (current 4.5.16, 2026-11-10) | Supported | Until 2027-07 |
+| 5.4 | Alpha（main，until 2027-02-03） | **不承诺**：仅 `hasattr` 兜底 |
 
 ---
 
