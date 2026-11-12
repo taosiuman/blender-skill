@@ -1,6 +1,6 @@
 # Troubleshooting
 
-Error table for the official Blender MCP add-on (v1.0.3) — last updated 2026-11-10 (skill v3.7.2) and the pinned server package. Issue numbers refer to https://projects.blender.org/lab/blender_mcp.
+Error table for the official Blender MCP add-on (v1.0.3) — last updated 2026-11-12 (skill v3.7.3) and the pinned server package. Issue numbers refer to https://projects.blender.org/lab/blender_mcp.
 
 ## Troubleshooting
 
