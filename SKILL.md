@@ -3,7 +3,7 @@ name: blender-mcp
 description: "连接运行中的 Blender：安装官方 Lab MCP 插件，再用固定版本的服务进程调用场景、截图、渲染和文档工具，或执行 bpy。需要实时操控 Blender 时使用。"
 homepage: https://www.blender.org/lab/mcp-server/
 author: taosiuman
-version: 3.7.2
+version: 3.7.3
 metadata:
   octop:
     emoji: "🔌"
@@ -21,9 +21,9 @@ Connect to and control a running Blender instance via the official Blender MCP S
 
 通过官方 Blender MCP Server 连接和控制运行中的 Blender 实例。
 
-**Version support**: Blender 5.1+（官方 add-on 的硬性要求）, 5.2.x LTS (current **5.2.3**, 2026-10-22 发布), and **5.3 Beta**（Python API 自 Beta 起稳定；RC 2026-11-04 → 发布 2026-11-10）— API compatibility notes included below
+**Version support**: Blender 5.1+（官方 add-on 的硬性要求）；**生产基准 = 5.3（5.3.0，2026-11-10 正式发布）**；**兼容下限 = 5.2 LTS（5.2.4，2026-11-10 发布）**；5.4 仍 Alpha（until 2027-02-03），只用 `hasattr` 兜底 — API compatibility notes included below
 **Platform prerequisite**（2026-10-25 核验）: 官方 add-on 要求 **Blender ≥ 5.1**，而 Blender **5.0 起 macOS 只出 Apple Silicon 构建**（Apple Silicon + macOS 13 Ventura 起；`4.5 LTS` 是最后一个支持 Intel Mac 的版本）→ **Intel Mac 上不存在可用的「Blender 5.1+ × 官方 MCP」组合**；Windows / Linux 无此限制（Windows 需 4 核 SSE4.2 + OpenGL 4.3 或 Vulkan 1.3、8 GB RAM）
-**Last verified**: **2026-10-29**（周度深度整合：MCP 生态 **零增量** —— open issues **22**、open PR **4**（#66/#48/#47/#43 全未合并）、releases **6 条 / 最新 v1.0.3**、stars 33 / forks 33 / watchers 12 / `licenses` GPL-3.0、`updated_at` 仍 2026-09-29；本轮技能新增的是**平台前提**一条，故逐版递增到 v3.6.0。更长的说明在同目录的 `references/`）
+**Last verified**: **2026-11-12**（基线口径对齐版：生产基准切 **5.3**、兼容下限 **5.2 LTS（5.2.4）**；MCP 生态**零增量** —— open issues **27**（最新 #72）、open PR **5** 全未合并、releases **6 条 / 最新 v1.0.3**、stars 37 / forks 38 / watchers 13、`updated_at` 仍 2026-09-29。更长的说明在同目录的 `references/`）
 
 ---
 
@@ -267,7 +267,7 @@ The full error table (connection, SAC, TLS, port reuse, return type) is in [refe
 
 ## API compatibility notes
 
-Breaking changes and version guards for Blender 5.1, 5.2 LTS and 5.3 Beta live in [references/api.md](references/api.md). Read that file before writing version-sensitive `bpy` code.
+Breaking changes and version guards for Blender 5.1, 5.2 LTS (compatibility floor) and 5.3 (production baseline) live in [references/api.md](references/api.md). Read that file before writing version-sensitive `bpy` code.
 
 
 ## OpenClaw Integration
