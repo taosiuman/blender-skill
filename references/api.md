@@ -1,6 +1,6 @@
 # Blender API Compatibility Notes
 
-Version guards for code sent through `execute_blender_code`. Production baseline is Blender 5.2 LTS. These notes describe the official Blender Python API, not a separate server.
+Version guards for code sent through `execute_blender_code`. **Production baseline: Blender 5.3 (5.3.0, released 2026-11-10); compatibility floor: 5.2 LTS (5.2.4).** These notes describe the official Blender Python API, not a separate server.
 
 ## Blender 5.1 API Compatibility Notes
 
@@ -50,9 +50,9 @@ brush.stroke_method = 'AIRBRUSH'  # Options: AIRBRUSH, SPACE, ANCHORED, LINE, CU
 
 ---
 
-## Blender 5.2 LTS Compatibility Notes (Beta)
+## Blender 5.2 LTS Compatibility Notes (LTS — **兼容下限**)
 
-> Blender 5.2 LTS entered Beta on 2026-06-03. API is frozen; RC expected 2026-07-08, release 2026-07-14.
+> Blender 5.2 LTS 已发布（最新补丁 **5.2.4**，2026-11-10）。自 2026-11-12 起 5.2 **不再是生产基准**，而是**兼容下限** —— 这些破坏性变更仍是「从 5.1/4.x 往上迁」与「向下兼容 5.2」的必读项。
 
 ### 🔴 Breaking Changes (12 total — all Beta confirmed)
 
@@ -205,12 +205,11 @@ All 17 properties: `use_automasking_topology`, `use_automasking_face_sets`, `use
 
 ---
 
-## Blender 5.3 Compatibility Notes (Beta — API 已稳定)
+## Blender 5.3 Compatibility Notes (正式版 — 2026-11-10 发布，**生产基准**)
 
-> **5.3 = Beta**（分支 `blender-v5.3-release`）。官方 release notes 首页原文：**"Blender 5.3 is currently in Beta until November 4, 2026"**（= RC 节点）→ **正式发布 2026-11-10**。
-> 官方 release cycle 明确「**Beta 期间 Python API 保持稳定，add-ons 有时间在发布前完成适配**」→ **5.3 兼容代码现在就可以定版**。
-> 生产基准仍是 **5.2.x LTS（当前 5.2.3，2026-10-22 发布）**；5.4 处于 Alpha，**不承诺、不跟**。
-> 📝 最后核验：**2026-10-11**（`/api/5.3/` 章节 131 条 + 5.3 release notes 首页/python_api 全页；完整条目与迁移清单见 `references/api.md`）
+> **5.3 已于 2026-11-10 正式发布**（5.3.0；同日 5.2.4 / 4.5.16 也发布）。`download.blender.org/release/Blender5.3/` 有包、Gitea tag `v5.3.0` 存在、`.msi` 200 → 三件套全绿。
+> **现行口径**：新代码按 **5.3** 写（不再叫「前瞻」），**每条 5.3 路径必须留 5.2 回退**；`bl_info["blender"] = (5, 2, 0)`。5.4 处于 Alpha（until 2027-02-03），**只用 `hasattr` 兜底、不基于它开发**。
+> 📝 最后核验：**2026-11-12**（`/api/5.3/` 的 `5.2 to 5.3` 章节 133 条，连续第 7 轮零变更；完整条目与迁移清单见 `knowledge/blender/api-changes-5.3.md`）
 
 ### 🔴 5.3 Breaking Changes（8 组，详见知识库）
 
