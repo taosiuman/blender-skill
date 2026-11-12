@@ -4,6 +4,15 @@ Version history of this skill. Current version is recorded in SKILL.md front mat
 
 ## Changelog
 
+### v3.7.3 (2026-11-12) — 基线口径切换：生产基准 5.2 LTS → **5.3**，5.2.4 转为兼容下限
+
+- 🟢 **用户拍板（2026-11-12）**：「全面更新到 5.3 然后兼容 5.2」→ 技能内**所有版本口径**改为：**生产基准 = 5.3（5.3.0，2026-11-10 正式发布）**、**兼容下限 = 5.2 LTS（5.2.4）**。
+- 📝 **改了 5 处**：`SKILL.md` 版本支持行 + API 兼容段；`references/api.md` 头部基线（en）+ 「5.3 Compatibility Notes」段（原写 Beta / 基准仍 5.2，已过期）+ 「5.2 LTS Compatibility Notes」标题与说明（原写 5.2 进 Beta 的 2026-06 日期）+ `README.md` 版本行 / 特性行 / Requirements / 版本支持表。
+- ✅ **发布事实（2026-11-11 10:00 三件套全绿复扫）**：`download.blender.org/release/Blender5.3/` 200（8 个唯一包名，无 macOS Intel）、Gitea tag `v5.3.0` 200、`blender-5.3.0-windows-x64.msi` HEAD 200；同日 **5.2.4 / 4.5.16** 也正式发布。
+- 📌 **MCP 生态零增量**（2026-11-12 逐字段核对）：`open_issues_count` 27（最新仍 #72）、open PR 5 全未合并（#68/#66/#48 `true`，#47/#43 `false`）、releases 6 条 / 最新 v1.0.3、stars 37 / forks 38 / watchers 13、`updated_at` 2026-09-29 → **本次是口径对齐版，不是新发现版**。
+- ⚠️ **不改写历史**：v3.7.2 及更早条目里「以 5.2.3 LTS 为生产基准」的表述是**当时的正确结论**，保留不动。
+- ✅ 版本号三处一致：`SKILL.md` frontmatter / README 版本行 / 本 Changelog = **3.7.3**
+
 ### v3.7.2 (2026-11-10) — `*_for_cli` 第三套根因：MCP add-on 抢 9876 + 非守护线程（官方 issue #72）
 
 - 🟡 **新事实**（官方 issue **#72**，2026-11-09T19:01+01:00，`Nikola-Sinitsa`，0 评论）：`execute_blender_code_for_cli` 即使只跑 `result = {"ok": 1}` 也稳定报 **`Blender CLI timed out after 120s`**（Win11 / Blender 5.2.3 LTS / MCP extension 1.0.1，交互实例已在 9876 跑 server）。
